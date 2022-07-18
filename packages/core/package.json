@@ -1,0 +1,19 @@
+{
+  "name": "@grpc-ts/core",
+  "version": "0.0.0",
+  "description": "",
+  "files": [
+    "src/*"
+  ],
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "typescript": "^4.7.4"
+  }
+}
