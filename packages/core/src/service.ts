@@ -7,12 +7,20 @@ type ResolverFn<TInput, TOutput, TContext> = (opts: ResolverInput<TInput, TConte
 
 type ResolverInput<TInput, TContext> = { ctx: TContext, metadata: string, input: TInput }
 
-type RpcOptions<TInput, TOutput, TContext> = {
-	input: TInput
-	output: TOutput
+
+export type RpcParserWithInputOutput<TInput, TOutput> =
+	ProcedureParserZodEsque<TInput, TOutput>;
+
+export type ProcedureParserZodEsque<TInput, TOutput> = {
+	_input: TInput;
+	_output: TOutput;
+};
+
+export type RpcOptions<TInput, TOutput, TContext, TParsedInput, TParsedOutput> = {
+	input: RpcParserWithInputOutput<TInput, TParsedInput>
+	output: RpcParserWithInputOutput<TOutput, TParsedOutput>
 	resolve: ResolverFn<TInput, TOutput, TContext>
 }
-
 
 export class Service<TContext> {
 	rpcs: Map<string, any> = new Map()
@@ -23,7 +31,22 @@ export class Service<TContext> {
 	}
 
 
-	rpc<TName extends string, TInput, TOutput>(name: TName, rpcOptions: RpcOptions<TInput, TOutput, TContext>) {
+	rpc<
+		TName extends string,
+		TInput,
+		TOutput,
+		TParsedInput,
+		TParsedOutput
+	>(
+		name: TName,
+		rpcOptions: RpcOptions<
+			TInput,
+			TOutput,
+			TContext,
+			TParsedInput,
+			TParsedOutput
+		>,
+	) {
 		this.rpcs.set(name, rpcOptions)
 		return this
 	}

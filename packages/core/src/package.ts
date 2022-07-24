@@ -5,7 +5,7 @@ type CreatePackageOptions = {
 }
 
 export class Package<TContext> {
-	#services: Map<string, Service<TContext>> = new Map()
+	services: Map<string, Service<TContext>> = new Map()
 	name?: string
 
 	constructor(opt: CreatePackageOptions = {}) {
@@ -15,7 +15,7 @@ export class Package<TContext> {
 	}
 
 	addService(service: Service<TContext>) {
-		this.#services.set(service.name, service)
+		this.services.set(service.name, service)
 		return this
 	}
 }
