@@ -10,8 +10,6 @@ export class Package<TContext> {
 
 	constructor(opt: CreatePackageOptions = {}) {
 		this.name = opt.name
-
-
 	}
 
 	addService(service: Service<TContext>) {

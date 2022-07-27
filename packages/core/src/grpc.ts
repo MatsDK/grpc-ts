@@ -14,6 +14,8 @@ export abstract class GrpcType<
 }
 
 export class GrpcString extends GrpcType<string> {
+	_name = "string"
+
 	static create = (): GrpcString => {
 		return new GrpcString()
 	}
@@ -34,15 +36,22 @@ export type objectOutputType<Shape extends GrpcRawShape> = objectUtil.flatten<
 	baseObjectOutputType<Shape>
 >;
 
-export class GrpcObject<
-	T extends GrpcRawShape,
+export class GrpcMessage<
+	T extends GrpcRawShape = any,
 	Output = objectOutputType<T>,
 	> extends GrpcType<Output> {
-
+	readonly _name: string
 	readonly _shape!: T;
 
-	static create = <TInput extends GrpcRawShape>(shape: TInput): GrpcObject<TInput> => {
-		return new GrpcObject()
+	constructor(name: string, shape: T) {
+		super()
+		this._shape = shape
+		this._name = name
+	}
+
+
+	static create = <TInput extends GrpcRawShape>(shape: TInput, name: string): GrpcMessage<TInput> => {
+		return new GrpcMessage(name, shape)
 	}
 }
 
@@ -50,6 +59,6 @@ export class GrpcObject<
 type Infer<T extends GrpcType> = T["_output"];
 
 export const grpc = {
-	Message: <T extends GrpcRawShape>(name: string, inner: T) => GrpcObject.create(inner),
+	Message: <T extends GrpcRawShape>(name: string, inner: T) => GrpcMessage.create(inner, name),
 	String: GrpcString.create()
 }

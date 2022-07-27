@@ -1,10 +1,14 @@
-import { Server as GrpcServer } from "@grpc/grpc-js"
-import { Package } from "../../core/src"
-import { RpcOptions, Service } from "@grpc-ts/core"
-// import { generateProtobuf } from "@grpc-ts/core/src"
+import { Server as GrpcServer, loadPackageDefinition, UntypedServiceImplementation } from "@grpc/grpc-js"
+import { loadSync, Options } from "@grpc/proto-loader";
+import { generateProtobuf, Package, GenerateProtobufOutputPaths } from "@grpc-ts/core"
 
-export type ObjectType<T> = { new(): T }
-
+const LOAD_SYNC_OPTIONS: Options = {
+	keepCase: true,
+	longs: String,
+	enums: String,
+	defaults: true,
+	oneofs: true
+}
 
 export class Server {
 	server: GrpcServer
@@ -12,31 +16,32 @@ export class Server {
 	constructor(packages: Package<any>[]) {
 		this.server = new GrpcServer()
 
-
-		this.#generateProtos(packages)
-		// generateProtobuf({ output: "./proto.proto" })
+		const { outputPaths } = generateProtobuf({ packages })
+		this.#loadPackages(outputPaths)
 	}
 
-	#generateProtos(packages: Package<any>[]) {
-		for (const p of packages) {
-			p.services.forEach((service, name) => {
-				const { output } = generateService(service)
-				console.log(output)
-			})
+	#loadPackages(paths: Set<GenerateProtobufOutputPaths>) {
+		for (const { outputPath, serviceName, package: pkg } of paths) {
+			const packageDefinition = loadSync(
+				outputPath,
+				LOAD_SYNC_OPTIONS
+			);
+
+			const protoDescriptor = loadPackageDefinition(packageDefinition)[serviceName] as any;
+
+			this.server.addService(protoDescriptor.service, this.#buildPackageResolvers(pkg))
 		}
 	}
-}
 
-const generateService = (service: Service<any>) => {
-	let output = `service ${service.name} {`
-	if (service.rpcs.size) output += '\n'
+	#buildPackageResolvers(pkg: Package<any>): UntypedServiceImplementation {
+		const resolvers = {} as UntypedServiceImplementation
+		pkg.services.forEach((service) => {
+			service.rpcs.forEach((rpc, name) => {
+				resolvers[name] = rpc.resolve
+			})
+		})
+		console.log(resolvers)
 
-	Array.from(service.rpcs).forEach(([name, rpc], idx) => {
-		output += `\trpc ${name} (${rpc.input.out}) returns (${rpc.output.out})`
-		if (idx !== service.rpcs.size) output += '\n'
-	});
-
-	output += '}'
-
-	return { output }
+		return resolvers
+	}
 }

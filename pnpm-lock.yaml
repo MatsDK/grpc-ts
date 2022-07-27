@@ -22,6 +22,7 @@ importers:
     specifiers:
       '@grpc-ts/core': workspace:^0.0.0
       '@grpc/grpc-js': ^1.6.7
+      '@grpc/proto-loader': ^0.7.0
       '@types/glob': ^7.2.0
       '@types/node': ^18.0.0
       glob: ^8.0.3
@@ -31,6 +32,7 @@ importers:
     dependencies:
       '@grpc-ts/core': link:../core
       '@grpc/grpc-js': 1.6.7
+      '@grpc/proto-loader': 0.7.0
       glob: 8.0.3
       reflect-metadata: 0.1.13
     devDependencies:
@@ -65,6 +67,18 @@ packages:
       lodash.camelcase: 4.3.0
       long: 4.0.0
       protobufjs: 6.11.3
+      yargs: 16.2.0
+    dev: false
+
+  /@grpc/proto-loader/0.7.0:
+    resolution: {integrity: sha512-SGPZtVmqOvNfPFOA/nNPn+0Weqa5wubBgQ56+JgTbeLY2VezwtMjwPPFzh0kvQccwWT3a2TXT0ZGK/pJoOTk1A==}
+    engines: {node: '>=6'}
+    hasBin: true
+    dependencies:
+      '@types/long': 4.0.2
+      lodash.camelcase: 4.3.0
+      long: 4.0.0
+      protobufjs: 7.0.0
       yargs: 16.2.0
     dev: false
 
@@ -413,6 +427,10 @@ packages:
     resolution: {integrity: sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA==}
     dev: false
 
+  /long/5.2.0:
+    resolution: {integrity: sha512-9RTUNjK60eJbx3uz+TEGF7fUr29ZDxR5QzXcyDpeSfeH28S9ycINflOgOlppit5U+4kNTe83KQnMEerw7GmE8w==}
+    dev: false
+
   /make-error/1.3.6:
     resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
     dev: true
@@ -482,6 +500,26 @@ packages:
       '@types/long': 4.0.2
       '@types/node': 18.0.0
       long: 4.0.0
+    dev: false
+
+  /protobufjs/7.0.0:
+    resolution: {integrity: sha512-ffNIEm+quOcYtQvHdW406v1NQmZSuqVklxsXk076BtuFnlYZfigLU+JOMrTD8TUOyqHYbRI/fSVNvgd25YeN3w==}
+    engines: {node: '>=12.0.0'}
+    requiresBuild: true
+    dependencies:
+      '@protobufjs/aspromise': 1.1.2
+      '@protobufjs/base64': 1.1.2
+      '@protobufjs/codegen': 2.0.4
+      '@protobufjs/eventemitter': 1.1.0
+      '@protobufjs/fetch': 1.1.0
+      '@protobufjs/float': 1.0.2
+      '@protobufjs/inquire': 1.1.0
+      '@protobufjs/path': 1.1.2
+      '@protobufjs/pool': 1.1.0
+      '@protobufjs/utf8': 1.1.0
+      '@types/long': 4.0.2
+      '@types/node': 18.0.0
+      long: 5.2.0
     dev: false
 
   /readdirp/3.6.0:
