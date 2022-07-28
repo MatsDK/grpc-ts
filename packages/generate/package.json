@@ -1,0 +1,14 @@
+{
+  "name": "generate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsnd --respawn test/index.ts --watch src/*",
+    "generate": "node "
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
