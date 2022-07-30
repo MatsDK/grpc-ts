@@ -1,6 +1,8 @@
 import { Server as GrpcServer, loadPackageDefinition, UntypedServiceImplementation } from "@grpc/grpc-js"
+import { join } from "path";
 import { loadSync, Options } from "@grpc/proto-loader";
 import { Package, GenerateProtobufOutputPaths } from "@grpc-ts/core"
+import { generate } from "@grpc-ts/generate"
 
 const LOAD_SYNC_OPTIONS: Options = {
 	keepCase: true,
@@ -15,6 +17,9 @@ export class Server {
 
 	constructor(packages: Package<any>[]) {
 		this.server = new GrpcServer()
+		const path = join(__dirname, "../test/main.proto")
+		const path2 = join(__dirname, "../test/main2.proto")
+		generate({ protoPaths: [path, path2] })
 
 		// this.#loadPackages(test)
 	}

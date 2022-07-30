@@ -11,7 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@grpc-ts/core": "workspace:^0.0.0",
+    "@grpc-ts/core": "workspace:*",
+    "@grpc-ts/generate": "workspace:*",
     "@grpc/grpc-js": "^1.6.7",
     "@grpc/proto-loader": "^0.7.0",
     "glob": "^8.0.3",
