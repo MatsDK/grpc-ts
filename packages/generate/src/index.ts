@@ -16,17 +16,38 @@ export const generate = ({ protoPaths }: GenerateOptions) => {
 		DEFAULT_LOAD_PKG_OPTIONS
 	)
 	const protoDefinition = loadPackageDefinition(packageDefinition)
-	console.log(protoDefinition)
-	const { } = parseDefinition(protoDefinition)
-	// console.log((protoDefinition.api as any).test.PutRequest.type)
+	const { pacakgeDefs } = parseDefinition(protoDefinition)
+	console.log(pacakgeDefs)
 
-	Object.entries(protoDefinition).forEach(([name, def]: [string, any]) => {
-		const isService = def?.prototype instanceof Client
-		console.log(name, isService)
-	})
 
 }
 
+type ParsedDefinitions = { services: any[], messages: any[] }
+
 const parseDefinition = (protoDefinition: GrpcObject) => {
-	return {}
+	const pacakgeDefs = new Map() as Map<string, ParsedDefinitions>
+
+	const nestedPackage = (defs: object, packageName = "") => {
+		const packageDefinitions = { services: [], messages: [] } as ParsedDefinitions
+
+		Object.entries(defs).forEach(([name, def]) => {
+			const isNotNestedPackage = "format" in def || def.prototype instanceof Client
+
+			if (isNotNestedPackage) {
+				if ("format" in def) packageDefinitions.messages.push(def)
+				else if (def.prototype instanceof Client) packageDefinitions.services.push(def)
+			} else {
+				const nestedPackageName = packageName ? `${packageName}.${name}` : name
+				nestedPackage(def, nestedPackageName)
+			}
+		});
+
+		(packageDefinitions.services.length || packageDefinitions.messages.length)
+			&& pacakgeDefs.set(packageName, packageDefinitions)
+	}
+
+	nestedPackage(protoDefinition)
+
+
+	return { pacakgeDefs }
 }
