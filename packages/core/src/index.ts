@@ -1,5 +1,5 @@
-export type { ResolverFn, InputType, GenerateProtobufOutputPaths } from "./types"
-export { createService, Service } from "./service"
-export { createPackage, Package } from "./package"
-export * from "./grpc"
-export type { RpcOptions } from "./service"
+export * from './grpc'
+export { createPackage, Package } from './package'
+export { createService, Service } from './service'
+export type { RpcOptions } from './service'
+export type { GenerateProtobufOutputPaths, InputType, ResolverFn } from './types'

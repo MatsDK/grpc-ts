@@ -5,12 +5,15 @@
   "main": "index.js",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev"
+    "dev": "turbo run dev",
+    "format": "dprint fmt",
+    "lint:format": "dprint check"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "dprint": "^0.30.3",
     "turbo": "^1.2.16",
     "typescript": "^4.7.4"
   }

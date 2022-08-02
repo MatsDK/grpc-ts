@@ -1,0 +1,20 @@
+{
+  "indentWidth": 4,
+  "typescript": {
+    "quoteStyle": "preferSingle",
+    "semiColons": "asi"
+  },
+  "includes": [
+    "**/*.{ts,tsx,js,jsx,cjs,mjs}"
+  ],
+  "excludes": [
+    "**/node_modules",
+    "pnpm-lock.yaml",
+    "dist",
+    ".next",
+    "packages/typescript-extension/src/types"
+  ],
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.71.2.wasm"
+  ]
+}
