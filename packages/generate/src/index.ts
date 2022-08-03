@@ -54,18 +54,42 @@ const parseDefinition = (protoDefinition: GrpcObject) => {
 }
 
 const buildTypes = (pacakgeDefs: ParsedDefinition) => {
+    const outputMap: Map<string, string> = new Map()
     pacakgeDefs.forEach((packageDef, packageName) => {
-        packageDef.messages.length
-            && bulidMessages(packageName, packageDef.messages)
+        if (packageDef.messages.length) {
+            outputMap.set('common.ts', bulidMessages(packageName, packageDef.messages))
+        }
     })
+
+    console.log(outputMap)
 }
 
 const bulidMessages = (pkgName: string, pkgMessages: ProtobufTypeDefinition[]) => {
-    pkgMessages.forEach((msg) => {
-        const type = msg.type as any
-        const fullMsgName = [...pkgName.split('.'), type.name]
+    return `
+${
+        pkgMessages.map((msg) => {
+            const grpcMsg = new GrpcMessage(msg.type, pkgName)
+            return grpcMsg.toTS()
+        }).join('\n')
+    }
+`
+}
+
+class GrpcMessage {
+    type: any
+    pacakgeName: string
+
+    constructor(type: any, packageName: string) {
+        this.type = type
+        this.pacakgeName = packageName
+    }
+
+    toTS() {
+        const fullMsgName = [...this.pacakgeName.split('.'), this.type.name]
             .map(value => value.charAt(0).toUpperCase() + value.slice(1))
             .join('')
-        console.log(fullMsgName)
-    })
+
+        return `export type ${fullMsgName} = {
+}`
+    }
 }

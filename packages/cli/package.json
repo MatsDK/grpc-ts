@@ -7,7 +7,7 @@
     "src/*"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc src/index.ts --outDir dist"
   },
   "bin": {
     "ts-grpc": "dist/index.js"
@@ -20,6 +20,7 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "glob": "^8.0.3"
+    "glob": "^8.0.3",
+    "@grpc-ts/generate": "workspace:*"
   }
 }

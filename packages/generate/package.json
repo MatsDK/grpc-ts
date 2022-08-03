@@ -3,11 +3,11 @@
   "version": "0.0.0",
   "description": "",
   "files": [
-    "src/*"
+    "dist/*"
   ],
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc src/index.ts --outDir dist"
   },
   "keywords": [],
   "author": "",

@@ -40,22 +40,22 @@ exports.getProtoPaths = void 0;
 var fs_1 = require("fs");
 var path_1 = require("path");
 var getProtoPaths = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var protoFolder, paths;
+    var protoDir, paths;
     return __generator(this, function (_a) {
-        protoFolder = path_1.join(__dirname, "../../../proto");
-        if (!fs_1.existsSync(protoFolder))
+        protoDir = (0, path_1.join)(__dirname, '../../../proto');
+        if (!(0, fs_1.existsSync)(protoDir))
             return [2 /*return*/, []];
-        paths = readDir(protoFolder);
+        paths = readDir(protoDir);
         return [2 /*return*/, paths];
     });
 }); };
 exports.getProtoPaths = getProtoPaths;
-var readDir = function (folderPath) {
+var readDir = function (dirPath) {
     var paths = [];
-    for (var _i = 0, _a = fs_1.readdirSync(folderPath); _i < _a.length; _i++) {
-        var folderItemName = _a[_i];
-        var path = path_1.join(folderPath, folderItemName);
-        var stat = fs_1.statSync(path);
+    for (var _i = 0, _a = (0, fs_1.readdirSync)(dirPath); _i < _a.length; _i++) {
+        var dirItemName = _a[_i];
+        var path = (0, path_1.join)(dirPath, dirItemName);
+        var stat = (0, fs_1.statSync)(path);
         if (stat.isFile())
             paths.push(path);
         else if (stat.isDirectory()) {

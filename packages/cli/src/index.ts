@@ -1,5 +1,6 @@
 #! /usr/bin/env node
 
+import { generate } from '@grpc-ts/generate'
 import { getProtoPaths } from './utils'
 
 const main = async () => {
@@ -7,7 +8,9 @@ const main = async () => {
 
     if (args[0] === 'generate') {
         const protoPaths = await getProtoPaths()
-        console.log(protoPaths)
+        if (!protoPaths.length) return
+
+        generate({ protoPaths })
     }
 }
 
