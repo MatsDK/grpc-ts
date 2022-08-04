@@ -1,68 +1,92 @@
-import {
-    Client,
-    GrpcObject,
-    loadPackageDefinition,
-    ProtobufTypeDefinition,
-    ServiceClientConstructor,
-} from '@grpc/grpc-js'
-import { loadSync } from '@grpc/proto-loader'
+import { ProtobufTypeDefinition } from '@grpc/grpc-js'
+import { loadSync, NamespaceBase, Service, Type } from 'protobufjs'
 
 interface GenerateOptions {
     protoPaths: string[]
 }
 
-const DEFAULT_LOAD_PKG_OPTIONS = {}
+// const DEFAULT_LOAD_PKG_OPTIONS = {
+//     keepCase: true,
+//     longs: String,
+//     enums: String,
+//     defaults: true,
+//     oneofs: true,
+// }
 
 export const generate = ({ protoPaths }: GenerateOptions) => {
-    const packageDefinition = loadSync(
-        protoPaths,
-        DEFAULT_LOAD_PKG_OPTIONS,
-    )
-    const protoDefinition = loadPackageDefinition(packageDefinition)
-    const { pacakgeDefs } = parseDefinition(protoDefinition)
+    // const packageDefinition = loadSync(
+    //     protoPaths,
+    //     DEFAULT_LOAD_PKG_OPTIONS,
+    // )
+    // const protoDefinition = loadPackageDefinition(packageDefinition)
+    // const { pacakgeDefs } = parseDefinition(protoDefinition)
 
-    buildTypes(pacakgeDefs)
+    const protoRoot = loadSync(protoPaths)
+
+    if (!protoRoot.nested) return
+    generateFromNestedObj(protoRoot.nested)
+
+    // buildTypes(pacakgeDefs)
 }
 
-type ParsedPackageDefinitions = { services: ServiceClientConstructor[]; messages: ProtobufTypeDefinition[] }
-type ParsedDefinition = Map<string, ParsedPackageDefinitions>
-
-const parseDefinition = (protoDefinition: GrpcObject) => {
-    const pacakgeDefs = new Map() as ParsedDefinition
-
-    const nestedPackage = (defs: object, packageName = '') => {
-        const packageDefinitions = { services: [], messages: [] } as ParsedPackageDefinitions
-
-        Object.entries(defs).forEach(([name, def]) => {
-            const isNotNestedPackage = 'format' in def || def.prototype instanceof Client
-
-            if (isNotNestedPackage) {
-                if ('format' in def) packageDefinitions.messages.push(def)
-                else if (def.prototype instanceof Client) packageDefinitions.services.push(def)
-            } else {
-                const nestedPackageName = packageName ? `${packageName}.${name}` : name
-                nestedPackage(def, nestedPackageName)
+const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>) => {
+    Object.entries(obj).forEach(([name, obj]) => {
+        switch (obj.constructor) {
+            case Type: {
+                console.log('type', name)
+                break
             }
-        })
-        ;(packageDefinitions.services.length || packageDefinitions.messages.length)
-            && pacakgeDefs.set(packageName, packageDefinitions)
-    }
-
-    nestedPackage(protoDefinition)
-
-    return { pacakgeDefs }
-}
-
-const buildTypes = (pacakgeDefs: ParsedDefinition) => {
-    const outputMap: Map<string, string> = new Map()
-    pacakgeDefs.forEach((packageDef, packageName) => {
-        if (packageDef.messages.length) {
-            outputMap.set('common.ts', bulidMessages(packageName, packageDef.messages))
+            case Service: {
+                console.log('service', name)
+                break
+            }
+            default: {
+                const constructorName = (obj as any).constructor.name
+                console.log(`'${constructorName}' is currently not supported`)
+            }
         }
     })
-
-    console.log(outputMap)
 }
+
+// type ParsedPackageDefinitions = { services: ServiceClientConstructor[]; messages: ProtobufTypeDefinition[] }
+// type ParsedDefinition = Map<string, ParsedPackageDefinitions>
+
+// const parseDefinition = (protoDefinition: GrpcObject) => {
+//     const pacakgeDefs = new Map() as ParsedDefinition
+
+//     const nestedPackage = (defs: object, packageName = '') => {
+//         const packageDefinitions = { services: [], messages: [] } as ParsedPackageDefinitions
+
+//         Object.entries(defs).forEach(([name, def]) => {
+//             const isNotNestedPackage = 'format' in def || def.prototype instanceof Client
+
+//             if (isNotNestedPackage) {
+//                 if ('format' in def) packageDefinitions.messages.push(def)
+//                 else if (def.prototype instanceof Client) packageDefinitions.services.push(def)
+//             } else {
+//                 const nestedPackageName = packageName ? `${packageName}.${name}` : name
+//                 nestedPackage(def, nestedPackageName)
+//             }
+//         })
+//             ; (packageDefinitions.services.length || packageDefinitions.messages.length)
+//                 && pacakgeDefs.set(packageName, packageDefinitions)
+//     }
+
+//     nestedPackage(protoDefinition)
+
+//     return { pacakgeDefs }
+// }
+
+// const buildTypes = (pacakgeDefs: ParsedDefinition) => {
+//     const outputMap: Map<string, string> = new Map()
+//     pacakgeDefs.forEach((packageDef, packageName) => {
+//         if (packageDef.messages.length) {
+//             outputMap.set('common.ts', bulidMessages(packageName, packageDef.messages))
+//         }
+//     })
+
+//     console.log(outputMap)
+// }
 
 const bulidMessages = (pkgName: string, pkgMessages: ProtobufTypeDefinition[]) => {
     return `
@@ -85,6 +109,7 @@ class GrpcMessage {
     }
 
     toTS() {
+        console.log(this.type)
         const fullMsgName = [...this.pacakgeName.split('.'), this.type.name]
             .map(value => value.charAt(0).toUpperCase() + value.slice(1))
             .join('')
