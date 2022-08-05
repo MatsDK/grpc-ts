@@ -1,5 +1,5 @@
-import { ProtobufTypeDefinition } from '@grpc/grpc-js'
-import { loadSync, NamespaceBase, Service, Type } from 'protobufjs'
+import { loadSync, NamespaceBase, Service, Type, Namespace } from 'protobufjs'
+import { grpcScalarTypeToTSType } from './grpcTypes'
 
 interface GenerateOptions {
     protoPaths: string[]
@@ -24,20 +24,34 @@ export const generate = ({ protoPaths }: GenerateOptions) => {
     const protoRoot = loadSync(protoPaths)
 
     if (!protoRoot.nested) return
-    generateFromNestedObj(protoRoot.nested)
+    const messagesMap = generateFromNestedObj(protoRoot.nested)
+    console.log(messagesMap)
+
+    messagesMap.forEach(msg => {
+        msg.toTS()
+    })
 
     // buildTypes(pacakgeDefs)
 }
 
-const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>) => {
+type MessagesMap = Map<string, GrpcMessage>
+
+const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>, messages: MessagesMap = new Map()) => {
     Object.entries(obj).forEach(([name, obj]) => {
         switch (obj.constructor) {
             case Type: {
-                console.log('type', name)
+                const msg = new GrpcMessage(obj as Type)
+                messages.set(msg.fullName, msg)
                 break
             }
             case Service: {
                 console.log('service', name)
+                break
+            }
+            case Namespace: {
+                const namespace = obj as Namespace
+                if (namespace.nested)
+                    generateFromNestedObj(namespace.nested, messages)
                 break
             }
             default: {
@@ -46,6 +60,8 @@ const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>) => {
             }
         }
     })
+
+    return messages
 }
 
 // type ParsedPackageDefinitions = { services: ServiceClientConstructor[]; messages: ProtobufTypeDefinition[] }
@@ -88,33 +104,24 @@ const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>) => {
 //     console.log(outputMap)
 // }
 
-const bulidMessages = (pkgName: string, pkgMessages: ProtobufTypeDefinition[]) => {
-    return `
-${
-        pkgMessages.map((msg) => {
-            const grpcMsg = new GrpcMessage(msg.type, pkgName)
-            return grpcMsg.toTS()
-        }).join('\n')
-    }
-`
-}
 
 class GrpcMessage {
-    type: any
-    pacakgeName: string
+    msg: Type
 
-    constructor(type: any, packageName: string) {
-        this.type = type
-        this.pacakgeName = packageName
+    constructor(msg: Type) {
+        this.msg = msg
     }
 
     toTS() {
-        console.log(this.type)
-        const fullMsgName = [...this.pacakgeName.split('.'), this.type.name]
+        Object.entries(this.msg.fields).forEach(([_name, field]) => {
+            console.log(field.name, field.type, grpcScalarTypeToTSType(field.type))
+        })
+    }
+
+    get fullName() {
+        return this.msg.fullName.split(".")
             .map(value => value.charAt(0).toUpperCase() + value.slice(1))
             .join('')
 
-        return `export type ${fullMsgName} = {
-}`
     }
 }

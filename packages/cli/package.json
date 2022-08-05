@@ -7,7 +7,8 @@
     "src/*"
   ],
   "scripts": {
-    "build": "tsc src/index.ts --outDir dist"
+    "build": "tsc src/index.ts --outDir dist",
+    "dev:generate": "tsnd src/index.ts generate --respawn"
   },
   "bin": {
     "ts-grpc": "dist/index.js"
@@ -20,7 +21,8 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "@grpc-ts/generate": "workspace:*",
     "glob": "^8.0.3",
-    "@grpc-ts/generate": "workspace:*"
+    "ts-node-dev": "^2.0.0"
   }
 }
