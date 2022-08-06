@@ -1,26 +1,11 @@
-import { loadSync, NamespaceBase, Service, Type, Namespace } from 'protobufjs'
+import { Enum, Field, loadSync, Namespace, NamespaceBase, Service, Type } from 'protobufjs'
 import { grpcScalarTypeToTSType } from './grpcTypes'
 
 interface GenerateOptions {
     protoPaths: string[]
+    outDir: string
 }
-
-// const DEFAULT_LOAD_PKG_OPTIONS = {
-//     keepCase: true,
-//     longs: String,
-//     enums: String,
-//     defaults: true,
-//     oneofs: true,
-// }
-
-export const generate = ({ protoPaths }: GenerateOptions) => {
-    // const packageDefinition = loadSync(
-    //     protoPaths,
-    //     DEFAULT_LOAD_PKG_OPTIONS,
-    // )
-    // const protoDefinition = loadPackageDefinition(packageDefinition)
-    // const { pacakgeDefs } = parseDefinition(protoDefinition)
-
+export const generate = ({ protoPaths, outDir }: GenerateOptions) => {
     const protoRoot = loadSync(protoPaths)
 
     if (!protoRoot.nested) return
@@ -28,10 +13,8 @@ export const generate = ({ protoPaths }: GenerateOptions) => {
     console.log(messagesMap)
 
     messagesMap.forEach(msg => {
-        msg.toTS()
+        console.log(msg.toTS())
     })
-
-    // buildTypes(pacakgeDefs)
 }
 
 type MessagesMap = Map<string, GrpcMessage>
@@ -40,8 +23,17 @@ const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>, messag
     Object.entries(obj).forEach(([name, obj]) => {
         switch (obj.constructor) {
             case Type: {
-                const msg = new GrpcMessage(obj as Type)
+                const objAsType = obj as Type
+                if (objAsType.nested) {
+                    generateFromNestedObj(objAsType.nested, messages)
+                }
+
+                const msg = new GrpcMessage(objAsType)
                 messages.set(msg.fullName, msg)
+                break
+            }
+            case Enum: {
+                console.log('enum')
                 break
             }
             case Service: {
@@ -50,8 +42,9 @@ const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>, messag
             }
             case Namespace: {
                 const namespace = obj as Namespace
-                if (namespace.nested)
+                if (namespace.nested) {
                     generateFromNestedObj(namespace.nested, messages)
+                }
                 break
             }
             default: {
@@ -64,47 +57,6 @@ const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>, messag
     return messages
 }
 
-// type ParsedPackageDefinitions = { services: ServiceClientConstructor[]; messages: ProtobufTypeDefinition[] }
-// type ParsedDefinition = Map<string, ParsedPackageDefinitions>
-
-// const parseDefinition = (protoDefinition: GrpcObject) => {
-//     const pacakgeDefs = new Map() as ParsedDefinition
-
-//     const nestedPackage = (defs: object, packageName = '') => {
-//         const packageDefinitions = { services: [], messages: [] } as ParsedPackageDefinitions
-
-//         Object.entries(defs).forEach(([name, def]) => {
-//             const isNotNestedPackage = 'format' in def || def.prototype instanceof Client
-
-//             if (isNotNestedPackage) {
-//                 if ('format' in def) packageDefinitions.messages.push(def)
-//                 else if (def.prototype instanceof Client) packageDefinitions.services.push(def)
-//             } else {
-//                 const nestedPackageName = packageName ? `${packageName}.${name}` : name
-//                 nestedPackage(def, nestedPackageName)
-//             }
-//         })
-//             ; (packageDefinitions.services.length || packageDefinitions.messages.length)
-//                 && pacakgeDefs.set(packageName, packageDefinitions)
-//     }
-
-//     nestedPackage(protoDefinition)
-
-//     return { pacakgeDefs }
-// }
-
-// const buildTypes = (pacakgeDefs: ParsedDefinition) => {
-//     const outputMap: Map<string, string> = new Map()
-//     pacakgeDefs.forEach((packageDef, packageName) => {
-//         if (packageDef.messages.length) {
-//             outputMap.set('common.ts', bulidMessages(packageName, packageDef.messages))
-//         }
-//     })
-
-//     console.log(outputMap)
-// }
-
-
 class GrpcMessage {
     msg: Type
 
@@ -113,15 +65,36 @@ class GrpcMessage {
     }
 
     toTS() {
-        Object.entries(this.msg.fields).forEach(([_name, field]) => {
-            console.log(field.name, field.type, grpcScalarTypeToTSType(field.type))
-        })
+        if (this.msg.oneofs) {
+            console.log('oneof')
+        }
+
+        return `export type ${this.fullName} = {
+${
+            this.msg.fieldsArray.map(field => {
+                const msgField = new GrpcMessageField(field)
+                return msgField.toTS()
+            }).join('\n')
+        }
+}`
     }
 
     get fullName() {
-        return this.msg.fullName.split(".")
+        return this.msg.fullName.split('.')
             .map(value => value.charAt(0).toUpperCase() + value.slice(1))
             .join('')
+    }
+}
 
+class GrpcMessageField {
+    field: Field
+
+    constructor(field: Field) {
+        this.field = field
+    }
+
+    toTS() {
+        const { name, type, repeated } = this.field
+        return `  ${name}: ${grpcScalarTypeToTSType(type)}${(repeated || '') && '[]'}`
     }
 }

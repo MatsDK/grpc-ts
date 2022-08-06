@@ -10,7 +10,7 @@ const main = async () => {
         const protoPaths = await getProtoPaths()
         if (!protoPaths.length) return
 
-        generate({ protoPaths })
+        generate({ protoPaths, outDir: '../' })
     }
 }
 
