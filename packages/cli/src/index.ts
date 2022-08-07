@@ -1,7 +1,10 @@
 #! /usr/bin/env node
 
 import { generate } from '@grpc-ts/generate'
+import { join } from 'node:path'
 import { getProtoPaths } from './utils'
+
+const outDir = join(__dirname, '../output')
 
 const main = async () => {
     const args = process.argv.slice(2)
@@ -10,7 +13,7 @@ const main = async () => {
         const protoPaths = await getProtoPaths()
         if (!protoPaths.length) return
 
-        generate({ protoPaths, outDir: '../' })
+        generate({ protoPaths, outDir })
     }
 }
 

@@ -24,6 +24,6 @@ export const grpcScalarTypeToTSType = (grpcType: string) => {
         case 'bytes':
             return 'Buffer'
         default:
-            return ''
+            return null
     }
 }

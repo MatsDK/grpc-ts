@@ -1,3 +1,5 @@
+import { writeFileSync } from "node:fs"
+import { join } from "node:path"
 import { Enum, Field, loadSync, Namespace, NamespaceBase, Service, Type } from 'protobufjs'
 import { grpcScalarTypeToTSType } from './grpcTypes'
 
@@ -9,30 +11,61 @@ export const generate = ({ protoPaths, outDir }: GenerateOptions) => {
     const protoRoot = loadSync(protoPaths)
 
     if (!protoRoot.nested) return
-    const messagesMap = generateFromNestedObj(protoRoot.nested)
-    console.log(messagesMap)
+    const parsedProto = generateFromNestedObj(protoRoot.nested, new Map())
 
-    messagesMap.forEach(msg => {
-        console.log(msg.toTS())
+    const outputFileMap: Record<string, string> = {}
+    outputFileMap['index.d.ts'] = Array.from(parsedProto)
+        .map(([name, { messages, enums }]) => {
+            return `// ${name}
+${messages.map(msg => {
+                return msg.toTS()
+            }).join('\n\n')
+                }
+
+${enums.map(e => {
+                    return e.toTS()
+                }).join('\n\n')
+                }
+`
+        }).join('\n')
+
+    Object.entries(outputFileMap).forEach(([fileName, output]) => {
+        const path = join(outDir, fileName)
+
+        writeFileSync(path, output)
     })
 }
 
-type MessagesMap = Map<string, GrpcMessage>
+type ParsedPackage = { messages: GrpcMessage[]; enums: GrpcEnum[] }
+type ParsedProtoMap = Map<string, ParsedPackage>
 
-const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>, messages: MessagesMap = new Map()) => {
+const generateFromNestedObj = (
+    obj: NonNullable<NamespaceBase['nested']>,
+    parsed: ParsedProtoMap,
+    packageName: string = '',
+) => {
     Object.entries(obj).forEach(([name, obj]) => {
         switch (obj.constructor) {
             case Type: {
                 const objAsType = obj as Type
                 if (objAsType.nested) {
-                    generateFromNestedObj(objAsType.nested, messages)
+                    parsed = generateFromNestedObj(objAsType.nested, parsed, packageName)
                 }
 
-                const msg = new GrpcMessage(objAsType)
-                messages.set(msg.fullName, msg)
+                const msg = new GrpcMessage(objAsType, parsed)
+
+                const parsedPackage = parsed.get(packageName) || { enums: [], messages: [] }
+                parsedPackage.messages.push(msg)
+                parsed.set(packageName, parsedPackage)
+
                 break
             }
             case Enum: {
+                const parsedPackage = parsed.get(packageName) || { enums: [], messages: [] }
+
+                const enum_ = new GrpcEnum(obj as Enum, parsed)
+                parsedPackage.enums.push(enum_)
+                parsed.set(packageName, parsedPackage)
                 console.log('enum')
                 break
             }
@@ -43,7 +76,11 @@ const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>, messag
             case Namespace: {
                 const namespace = obj as Namespace
                 if (namespace.nested) {
-                    generateFromNestedObj(namespace.nested, messages)
+                    const nestedPackageName = namespace.fullName.split('.')
+                        .map(value => value.charAt(0).toUpperCase() + value.slice(1))
+                        .join('')
+
+                    parsed = generateFromNestedObj(namespace.nested, parsed, nestedPackageName)
                 }
                 break
             }
@@ -54,14 +91,33 @@ const generateFromNestedObj = (obj: NonNullable<NamespaceBase['nested']>, messag
         }
     })
 
-    return messages
+    return parsed
 }
 
-class GrpcMessage {
-    msg: Type
+abstract class GrpcType {
+    name: string
 
-    constructor(msg: Type) {
+    constructor(fullName: string) {
+        this.name = fullName
+    }
+
+    abstract toTS(): string
+
+    get fullName() {
+        return this.name.split('.')
+            .map(value => value.charAt(0).toUpperCase() + value.slice(1))
+            .join('')
+    }
+}
+
+class GrpcMessage extends GrpcType {
+    msg: Type
+    parsedProto: ParsedProtoMap
+
+    constructor(msg: Type, parsedProto: ParsedProtoMap) {
+        super(msg.fullName)
         this.msg = msg
+        this.parsedProto = parsedProto
     }
 
     toTS() {
@@ -70,19 +126,29 @@ class GrpcMessage {
         }
 
         return `export type ${this.fullName} = {
-${
-            this.msg.fieldsArray.map(field => {
-                const msgField = new GrpcMessageField(field)
-                return msgField.toTS()
-            }).join('\n')
-        }
+${this.msg.fieldsArray.map(field => {
+            const msgField = new GrpcMessageField(field)
+            return msgField.toTS(this.parsedProto)
+        }).join('\n')
+            }
 }`
     }
+}
 
-    get fullName() {
-        return this.msg.fullName.split('.')
-            .map(value => value.charAt(0).toUpperCase() + value.slice(1))
-            .join('')
+class GrpcEnum extends GrpcType {
+    enum_: Enum
+    parsedProto: ParsedProtoMap
+
+    constructor(enum_: Enum, parsedProto: ParsedProtoMap) {
+        super(enum_.fullName)
+        this.enum_ = enum_
+        this.parsedProto = parsedProto
+    }
+
+    toTS() {
+        return `export enum ${this.fullName} {
+${Object.keys(this.enum_.values).map(value => `  ${value}`).join(',\n')}
+}`
     }
 }
 
@@ -93,8 +159,52 @@ class GrpcMessageField {
         this.field = field
     }
 
-    toTS() {
+    toTS(parsedProto: ParsedProtoMap) {
         const { name, type, repeated } = this.field
-        return `  ${name}: ${grpcScalarTypeToTSType(type)}${(repeated || '') && '[]'}`
+        let scalarType = grpcScalarTypeToTSType(type)
+
+        if (!scalarType) {
+            scalarType = findMessageName(this.field, parsedProto)
+        }
+
+        return `  ${name}: ${scalarType}${(repeated || '') && '[]'}`
     }
 }
+
+const findMessageName = (field: Field, parsedProto: ParsedProtoMap) => {
+    const { messages, enums } = getAllNamesFromParsedProto(parsedProto)
+    if (!field.parent?.fullName) return field.type
+
+    const parentNameParts = (field.parent.fullName.split('.'))
+
+    for (let i = parentNameParts.length; i >= 0; i--) {
+        const currName = formatName([...parentNameParts.slice(0, i), ...field.type.split('.')])
+
+        if (messages.includes(currName) || enums.includes(currName)) {
+            return currName
+        }
+    }
+
+    console.log('got here')
+    return formatName(field.type.split('.'))
+}
+
+const getAllNamesFromParsedProto = (parsedProto: ParsedProtoMap) => {
+    let enumNames = [] as string[]
+    let messageNames = [] as string[]
+
+    parsedProto.forEach(({ messages, enums }, pkgName) => {
+        messages.forEach(({ fullName }) => {
+            messageNames.push(fullName)
+        })
+        enums.forEach(({ fullName }) => {
+            enumNames.push(fullName)
+        })
+    })
+
+    return { enums: enumNames, messages: messageNames }
+}
+
+const formatName = (parts: string[]) =>
+    parts
+        .map(value => value.charAt(0).toUpperCase() + value.slice(1)).join('')
