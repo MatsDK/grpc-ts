@@ -1,5 +1,5 @@
-import { writeFileSync } from "node:fs"
-import { join } from "node:path"
+import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { Enum, Field, loadSync, Namespace, NamespaceBase, Service, Type } from 'protobufjs'
 import { grpcScalarTypeToTSType } from './grpcTypes'
 
@@ -17,15 +17,17 @@ export const generate = ({ protoPaths, outDir }: GenerateOptions) => {
     outputFileMap['index.d.ts'] = Array.from(parsedProto)
         .map(([name, { messages, enums }]) => {
             return `// ${name}
-${messages.map(msg => {
-                return msg.toTS()
-            }).join('\n\n')
-                }
+${
+                messages.map(msg => {
+                    return msg.toTS()
+                }).join('\n\n')
+            }
 
-${enums.map(e => {
+${
+                enums.map(e => {
                     return e.toTS()
                 }).join('\n\n')
-                }
+            }
 `
         }).join('\n')
 
@@ -66,7 +68,6 @@ const generateFromNestedObj = (
                 const enum_ = new GrpcEnum(obj as Enum, parsed)
                 parsedPackage.enums.push(enum_)
                 parsed.set(packageName, parsedPackage)
-                console.log('enum')
                 break
             }
             case Service: {
@@ -126,11 +127,12 @@ class GrpcMessage extends GrpcType {
         }
 
         return `export type ${this.fullName} = {
-${this.msg.fieldsArray.map(field => {
-            const msgField = new GrpcMessageField(field)
-            return msgField.toTS(this.parsedProto)
-        }).join('\n')
-            }
+${
+            this.msg.fieldsArray.map(field => {
+                const msgField = new GrpcMessageField(field)
+                return msgField.toTS(this.parsedProto)
+            }).join('\n')
+        }
 }`
     }
 }
@@ -185,7 +187,6 @@ const findMessageName = (field: Field, parsedProto: ParsedProtoMap) => {
         }
     }
 
-    console.log('got here')
     return formatName(field.type.split('.'))
 }
 

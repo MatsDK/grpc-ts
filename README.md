@@ -1,11 +1,11 @@
 # Typesafe gRPC
 
-grpc-ts allows you to easily created gRPC api
+grpc-ts is designed to help you create a typesafe [gRPC](https://grpc.io/) api
 
-## Features
+## Core Features
 - Ability to create a server and a client with the same schema
 - Typesafe resolvers/api-calls
-- Protobuf generation
+- Typescript types generation from `.proto` files
 
 ## Quickstart
 Look at the examples to learn the basics
@@ -15,30 +15,33 @@ Look at the examples to learn the basics
 ```
 
 ## Examples
-How to create a package and service
-```typescript
-import { createService, grpc, createPackage } from "@grpc-ts/core"
 
-type Context = {}
+__Generation types for server/client__
 
-const myService = createService<Context>({ name: "MainService" })
-	.rpc("testRpc", {
-		input: grpc.Message("input", {}),
-		output: grpc.Message("ouput", {}),
-		resolve: ({ ctx, input: { }, metadata }) => {
-			return {}
-		}
-	})
+1. Defining your [protobufs](https://developers.google.com/protocol-buffers/docs/overview)
+```protobuf
+// proto/example.proto
+syntax = "proto3";
 
-const myPackage = createPackage({ name: "MyPackage" }).addService(myService)
+service RouteGuide {
+  rpc GetUser() returns (User) {}
+}
+
+message User {
+	int32 id = 1;
+	string name = 2;
+}
 ```
 
-Running a server
+2. Generate typescript types from proto files
+```
+$ npx ts-grpc generate
+```
+
+__Running a server__
 ```typescript
-import { Server } from "@grpc-ts/server"
+```
 
-// Packages/Services
-
-const server = new Server([myPackage])
-server.listen(SERVER_URL, () => console.log("gRPC server is running"))
+__Running a client__
+```typescript
 ```
