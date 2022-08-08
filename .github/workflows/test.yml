@@ -13,10 +13,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - uses: pnpm/action-setup@v2.2.2
+        with:
+          version: 6.0.2
+          
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: pnpm
 
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Build
+        run: pnpm build
+      
+      - name: Lint
+        run: pnpm lint
