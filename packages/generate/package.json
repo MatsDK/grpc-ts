@@ -8,7 +8,7 @@
   ],
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsc src/index.ts --outDir dist"
+    "build": "tsc -t es5 src/index.ts --outDir dist"
   },
   "keywords": [],
   "author": "",

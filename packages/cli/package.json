@@ -7,7 +7,7 @@
     "src/*"
   ],
   "scripts": {
-    "build": "tsc src/index.ts --outDir dist",
+    "build": "tsc -t es5 src/index.ts --outDir dist",
     "dev:generate": "tsnd src/index.ts generate --respawn"
   },
   "bin": {

@@ -19,7 +19,7 @@ export class Server {
         this.server = new GrpcServer()
         const path = join(__dirname, '../test/main.proto')
         const path2 = join(__dirname, '../test/main2.proto')
-        generate({ protoPaths: [path, path2] })
+        generate({ protoPaths: [path, path2], outDir: '' })
 
         // this.#loadPackages(test)
     }

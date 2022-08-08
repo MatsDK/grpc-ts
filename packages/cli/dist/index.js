@@ -36,9 +36,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var generate_1 = require("@grpc-ts/generate");
+var node_path_1 = require("node:path");
 var utils_1 = require("./utils");
+var outDir = (0, node_path_1.join)(__dirname, '../output');
 var main = function () { return __awaiter(void 0, void 0, void 0, function () {
     var args, protoPaths;
     return __generator(this, function (_a) {
@@ -51,7 +53,7 @@ var main = function () { return __awaiter(void 0, void 0, void 0, function () {
                 protoPaths = _a.sent();
                 if (!protoPaths.length)
                     return [2 /*return*/];
-                (0, generate_1.generate)({ protoPaths: protoPaths });
+                (0, generate_1.generate)({ protoPaths: protoPaths, outDir: outDir });
                 _a.label = 2;
             case 2: return [2 /*return*/];
         }
