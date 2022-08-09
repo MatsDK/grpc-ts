@@ -1,5 +1,0 @@
-export * from './grpc'
-export { createPackage, Package } from './package'
-export { createService, Service } from './service'
-export type { RpcOptions } from './service'
-export type { GenerateProtobufOutputPaths, InputType, ResolverFn } from './types'

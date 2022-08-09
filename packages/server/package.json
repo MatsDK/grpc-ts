@@ -4,14 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsnd --respawn test/index.ts --watch src/*"
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@grpc-ts/core": "workspace:*",
     "@grpc-ts/generate": "workspace:*",
     "@grpc/grpc-js": "^1.6.7",
     "@grpc/proto-loader": "^0.7.0",

@@ -122,18 +122,37 @@ class GrpcMessage extends GrpcType {
     }
 
     toTS() {
+        let fields = this.msg.fieldsArray
+
+        let generatedOneOfFields = ``
         if (this.msg.oneofs) {
-            console.log('oneof')
+            Object.entries(this.msg.oneofs).map(([name, oneof]) => {
+                fields = fields.filter((field) => !oneof.oneof.includes(field.name))
+
+                const oneofFields = oneof.fieldsArray.map((field) => {
+                    const oneofKeyField = `${name}: '${field.name}'`
+                    const oneofField = new GrpcMessageField(field)
+
+                    return `{\n${oneofField.toTS(this.parsedProto)}\n  ${oneofKeyField}\n}`
+                }).join(' |\n')
+
+                generatedOneOfFields += ` & (\n${oneofFields} | {}\n)`
+            }).join(' |\n')
         }
 
-        return `export type ${this.fullName} = {
+        let generatedFields = ``
+        if (fields.length) {
+            generatedFields += `
 ${
-            this.msg.fieldsArray.map(field => {
-                const msgField = new GrpcMessageField(field)
-                return msgField.toTS(this.parsedProto)
-            }).join('\n')
+                fields.map(field => {
+                    const msgField = new GrpcMessageField(field)
+                    return msgField.toTS(this.parsedProto)
+                }).join('\n')
+            }
+`
         }
-}`
+
+        return `export type ${this.fullName} = {${generatedFields}}${generatedOneOfFields}`
     }
 }
 
