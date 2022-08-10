@@ -39,9 +39,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getProtoPaths = void 0;
 var fs_1 = require("fs");
 var path_1 = require("path");
+var readPkgUp = require("read-pkg-up");
 var getProtoPaths = function () { return __awaiter(void 0, void 0, void 0, function () {
     var protoDir, paths;
     return __generator(this, function (_a) {
+        console.log(readPkgUp);
         protoDir = (0, path_1.join)(__dirname, '../../../proto');
         if (!(0, fs_1.existsSync)(protoDir))
             return [2 /*return*/, []];

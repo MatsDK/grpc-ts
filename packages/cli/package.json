@@ -3,9 +3,6 @@
   "version": "0.0.0",
   "description": "",
   "main": "src/index.ts",
-  "files": [
-    "src/*"
-  ],
   "scripts": {
     "build": "tsc -t es5 src/index.ts --outDir dist",
     "dev:generate": "tsnd src/index.ts generate --respawn"
@@ -22,6 +19,7 @@
   },
   "dependencies": {
     "@grpc-ts/generate": "workspace:*",
+    "@grpc-ts/internals": "workspace:*",
     "glob": "^8.0.3",
     "ts-node-dev": "^2.0.0"
   }

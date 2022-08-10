@@ -27,3 +27,19 @@ export const grpcScalarTypeToTSType = (grpcType: string) => {
             return null
     }
 }
+
+export abstract class GrpcType {
+    name: string
+
+    constructor(fullName: string) {
+        this.name = fullName
+    }
+
+    abstract toTS(): string
+
+    get fullName() {
+        return this.name.split('.')
+            .map(value => value.charAt(0).toUpperCase() + value.slice(1))
+            .join('')
+    }
+}
