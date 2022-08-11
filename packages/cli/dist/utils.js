@@ -37,13 +37,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getProtoPaths = void 0;
+var internals_1 = require("@grpc-ts/internals");
 var fs_1 = require("fs");
 var path_1 = require("path");
-var readPkgUp = require("read-pkg-up");
-var getProtoPaths = function () { return __awaiter(void 0, void 0, void 0, function () {
+var getProtoPaths = function (argv) { return __awaiter(void 0, void 0, void 0, function () {
     var protoDir, paths;
     return __generator(this, function (_a) {
-        console.log(readPkgUp);
+        console.log((0, internals_1.findProtoPaths)('test'), argv);
         protoDir = (0, path_1.join)(__dirname, '../../../proto');
         if (!(0, fs_1.existsSync)(protoDir))
             return [2 /*return*/, []];

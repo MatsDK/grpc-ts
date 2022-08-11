@@ -2,7 +2,7 @@
 
 import { generate } from '@grpc-ts/generate'
 import { join } from 'node:path'
-import { getProtoPaths } from './utils'
+import { getProtoPaths } from './utils/protoPaths'
 
 const outDir = join(__dirname, '../output')
 
@@ -11,7 +11,11 @@ const main = async () => {
 
     if (args[0] === 'generate') {
         const protoPaths = await getProtoPaths(args.slice(1))
-        if (!protoPaths.length) return
+
+        if (!protoPaths?.length) {
+            console.error('No proto files found')
+            return
+        }
 
         generate({ protoPaths, outDir })
     }

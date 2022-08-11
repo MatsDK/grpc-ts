@@ -1,15 +1,19 @@
 import { findProtoPaths } from '@grpc-ts/internals'
-import { existsSync, readdirSync, statSync } from 'fs'
+import { readdirSync, statSync } from 'fs'
 import { join } from 'path'
+import { arg, isError } from './args'
 
 export const getProtoPaths = async (argv: string[]) => {
-    console.log(findProtoPaths('test'), argv)
-    // console.log(readPackageUp({ cwd: process.cwd() }))
-    const protoDir = join(__dirname, '../../../proto')
-    if (!existsSync(protoDir)) return []
+    const args = arg(argv, {
+        '--proto': [String],
+        '--respawn': String,
+    })
 
-    const paths = readDir(protoDir)
-    return paths
+    if (isError(args)) {
+        return
+    }
+
+    return findProtoPaths(args['--proto'])
 }
 
 const readDir = (dirPath: string): string[] => {

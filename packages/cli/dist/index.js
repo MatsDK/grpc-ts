@@ -48,7 +48,7 @@ var main = function () { return __awaiter(void 0, void 0, void 0, function () {
             case 0:
                 args = process.argv.slice(2);
                 if (!(args[0] === 'generate')) return [3 /*break*/, 2];
-                return [4 /*yield*/, (0, utils_1.getProtoPaths)()];
+                return [4 /*yield*/, (0, utils_1.getProtoPaths)(args.slice(1))];
             case 1:
                 protoPaths = _a.sent();
                 if (!protoPaths.length)

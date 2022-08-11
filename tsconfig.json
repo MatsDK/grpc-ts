@@ -16,7 +16,7 @@
     "jsxFragmentFactory": "Fragment"
   },
   "include": [
-	  "packages"
+    "packages"
   ],
   "exclude": [
     "node_modules",
