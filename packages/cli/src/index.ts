@@ -4,7 +4,6 @@ import { generate } from '@grpc-ts/generate'
 import { getProtoPaths } from './utils/protoPaths'
 import { getOutputDir } from './utils/utils'
 
-
 const main = async () => {
     const args = process.argv.slice(2)
 

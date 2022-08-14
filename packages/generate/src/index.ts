@@ -1,12 +1,12 @@
-import { writeFileSync, mkdir } from 'node:fs'
-import { promisify } from 'node:util'
+import { mkdir, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { promisify } from 'node:util'
 import { Enum, loadSync, Namespace, NamespaceBase, Service, Type } from 'protobufjs'
 import { GrpcEnum } from './Enum'
 import { GrpcMessage } from './Message'
 import { ParsedProtoMap } from './types'
 
-const makeDir = promisify(mkdir);
+const makeDir = promisify(mkdir)
 
 interface GenerateOptions {
     protoPaths: string[]
@@ -23,15 +23,17 @@ export const generate = async ({ protoPaths, outDir }: GenerateOptions) => {
     outputFileMap['index.d.ts'] = Array.from(parsedProto)
         .map(([name, { messages, enums }]) => {
             return `// ${name}
-${messages.map(msg => {
-                return msg.toTS()
-            }).join('\n\n')
-                }
+${
+                messages.map(msg => {
+                    return msg.toTS()
+                }).join('\n\n')
+            }
 
-${enums.map(e => {
+${
+                enums.map(e => {
                     return e.toTS()
                 }).join('\n\n')
-                }`
+            }`
         }).join('\n')
 
     await makeDir(outDir, { recursive: true })
