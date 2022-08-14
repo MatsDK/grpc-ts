@@ -7,10 +7,12 @@ export const findProtoPaths = (
 ) => {
     // 1. Try user-specified paths with `--proto` flag
     // 2. Try from package.json `grpc_ts` config
+    // 2. Try from package.json `grpc_ts` config
     const protoPaths = getProtoPathsFromArgs(protoPathsFromArgs)
         ?? getProtoPathsFromPkgJson()
+        ?? getRelativeProtoPaths()
 
-    if (protoPaths) {
+    if (protoPaths?.length) {
         return protoPaths
     }
 
@@ -33,7 +35,13 @@ const getProtoPathsFromPkgJson = () => {
     const protoPaths = (Array.isArray(grpcTsConfig.config.protoPaths)
         ? grpcTsConfig.config.protoPaths
         : [grpcTsConfig.config.protoPaths])
-        .flatMap(protoPath => glob.sync(resolve(protoPath)))
 
-    return protoPaths
+    return protoPaths.flatMap(protoPath => glob.sync(resolve(protoPath)))
+}
+
+const getRelativeProtoPaths = () => {
+    return [
+        ...glob.sync(resolve('./proto/*.proto')),
+        ...glob.sync(resolve('./*.proto')),
+    ]
 }

@@ -1,4 +1,3 @@
-import type { ReadResult } from 'read-pkg-up'
 import readPkgUp from 'read-pkg-up'
 import { z } from 'zod'
 
@@ -13,7 +12,7 @@ const gprcTsPkgJsonConfig = z.object({
 type GrpcTsConfig = z.infer<typeof gprcTsPkgJsonConfig>
 
 export const getGrpcTsConfigFromPkgJson = () => {
-    const pkgJson = (readPkgUp as any).sync({ cwd: process.cwd() }) as ReadResult
+    const pkgJson = readPkgUp.sync({ cwd: process.cwd() })
     const GrpcTsPropertyFromPkgJson = pkgJson?.packageJson?.grpc_ts as GrpcTsConfig | undefined
 
     if (!pkgJson) return null
