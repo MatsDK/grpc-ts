@@ -15,7 +15,7 @@
   "author": "",
   "license": "ISC",
   "nano-staged": {
-    "*.{js,ts,md,json,yaml}": "dprint fmt"
+    "./**/*.{js,ts,md,json,yaml}": "dprint fmt"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
