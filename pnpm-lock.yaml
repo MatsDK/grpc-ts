@@ -7,6 +7,7 @@ importers:
       '@types/node': ^18.0.0
       dprint: ^0.30.3
       husky: ^8.0.0
+      nano-staged: ^0.8.0
       npm-run-all: ^4.1.5
       turbo: ^1.2.16
       typescript: ^4.7.4
@@ -14,6 +15,7 @@ importers:
       '@types/node': 18.0.0
       dprint: 0.30.3
       husky: 8.0.1
+      nano-staged: 0.8.0
       npm-run-all: 4.1.5
       turbo: 1.2.16
       typescript: 4.7.4
@@ -809,6 +811,14 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  /nano-staged/0.8.0:
+    resolution: {integrity: sha512-QSEqPGTCJbkHU2yLvfY6huqYPjdBrOaTMKatO1F8nCSrkQGXeKwtCiCnsdxnuMhbg3DTVywKaeWLGCE5oJpq0g==}
+    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+    hasBin: true
+    dependencies:
+      picocolors: 1.0.0
+    dev: true
+
   /nice-try/1.0.5:
     resolution: {integrity: sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==}
     dev: true
@@ -928,6 +938,10 @@ packages:
 
   /pend/1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
+    dev: true
+
+  /picocolors/1.0.0:
+    resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==}
     dev: true
 
   /picomatch/2.3.1:
