@@ -9,7 +9,6 @@ const main = async () => {
 
     if (args[0] === 'generate') {
         const protoPaths = await getProtoPaths(args.slice(1))
-        console.log(protoPaths)
         if (!protoPaths) {
             console.error('No proto files found')
             return
@@ -19,7 +18,7 @@ const main = async () => {
             return
         }
 
-        generate({ protoPaths, outDir })
+        await generate({ protoPaths, outDir })
     }
 }
 
