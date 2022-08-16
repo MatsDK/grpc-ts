@@ -4,7 +4,7 @@
     "description": "",
     "main": "src/index.ts",
     "files": [
-        "src/index.ts"
+        "src"
     ],
     "scripts": {
         "build": "tsc --build"

@@ -1,11 +1,7 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "dist",
-        "target": "es6",
-        "module": "commonjs",
-        "experimentalDecorators": true,
-        "strictPropertyInitialization": false
+        "outDir": "dist"
     },
     "include": [
         "src"

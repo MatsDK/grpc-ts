@@ -5,8 +5,11 @@
     "main": "index.js",
     "types": "index.d.ts",
     "scripts": {
-        "build": "tsc"
+        "build": "tsc --build"
     },
+    "files": [
+        "src"
+    ],
     "keywords": [],
     "author": "",
     "license": "ISC",
