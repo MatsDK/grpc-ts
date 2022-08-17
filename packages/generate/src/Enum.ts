@@ -1,15 +1,12 @@
 import { Enum } from 'protobufjs'
 import { GrpcType } from './grpcTypes'
-import { ParsedProtoMap } from './types'
 
 export class GrpcEnum extends GrpcType {
     enum_: Enum
-    parsedProto: ParsedProtoMap
 
-    constructor(enum_: Enum, parsedProto: ParsedProtoMap) {
+    constructor(enum_: Enum) {
         super(enum_.fullName)
         this.enum_ = enum_
-        this.parsedProto = parsedProto
     }
 
     toTS() {

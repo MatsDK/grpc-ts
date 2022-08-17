@@ -2,8 +2,8 @@ import { mkdir, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import { loadSync } from 'protobufjs'
-import { generateCommonProtoDefs } from './generateCommonDefs'
-import { parseFromNestedObj } from './parseProtoObj'
+import { CommonDefsGenerator } from './generateCommonDefs'
+import { ProtoParser } from './parseProtoObj'
 
 const makeDir = promisify(mkdir)
 
@@ -16,14 +16,16 @@ export const generate = async ({ protoPaths, outDir }: GenerateOptions) => {
     const protoRoot = loadSync(protoPaths)
 
     if (!protoRoot.nested) return
-    const parsedProto = parseFromNestedObj(protoRoot.nested, new Map())
+
+    const protoParser = new ProtoParser()
+    const parsedProto = protoParser.parseObj(protoPaths)!
+    const defsGenerator = new CommonDefsGenerator({ parsedProto })
 
     const outputFileMap: Record<string, string> = {}
 
-    outputFileMap['index.d.ts'] = generateCommonProtoDefs(parsedProto)
+    outputFileMap['index.d.ts'] = defsGenerator.toTS()
+    outputFileMap['index.js'] = defsGenerator.toJS()
     outputFileMap['package.json'] = JSON.stringify(generatePkgJson(), null, 2)
-
-    outputFileMap['index.js'] = `const parsedDef = \`${JSON.stringify(Array.from(parsedProto), null, 2)}\``
 
     await makeDir(outDir, { recursive: true })
 

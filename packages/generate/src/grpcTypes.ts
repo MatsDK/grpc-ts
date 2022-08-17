@@ -1,3 +1,5 @@
+import { ParsedPackages } from './types'
+
 export const grpcScalarTypeToTSType = (grpcType: string) => {
     switch (grpcType) {
         case 'double':
@@ -35,7 +37,7 @@ export abstract class GrpcType {
         this.name = fullName
     }
 
-    abstract toTS(): string
+    abstract toTS(parsedPackages: ParsedPackages): string
 
     get fullName() {
         return this.name.split('.')

@@ -1,7 +1,7 @@
 import { Field } from 'protobufjs'
-import { ParsedProtoMap } from './types'
+import { ParsedPackages } from './types'
 
-export const findMessageName = (field: Field, parsedProto: ParsedProtoMap) => {
+export const findMessageName = (field: Field, parsedProto: ParsedPackages) => {
     const { messages, enums } = getAllNamesFromParsedProto(parsedProto)
     if (!field.parent?.fullName) return field.type
 
@@ -18,11 +18,11 @@ export const findMessageName = (field: Field, parsedProto: ParsedProtoMap) => {
     return formatName(field.type.split('.'))
 }
 
-export const getAllNamesFromParsedProto = (parsedProto: ParsedProtoMap) => {
+export const getAllNamesFromParsedProto = (parsedProto: ParsedPackages) => {
     let enumNames = [] as string[]
     let messageNames = [] as string[]
 
-    parsedProto.forEach(({ messages, enums }, pkgName) => {
+    Object.entries(parsedProto).forEach(([, { messages, enums }]) => {
         messages.forEach(({ fullName }) => {
             messageNames.push(fullName)
         })

@@ -1,19 +1,17 @@
 import { Field, Type } from 'protobufjs'
 import { grpcScalarTypeToTSType, GrpcType } from './grpcTypes'
-import { ParsedProtoMap } from './types'
+import { ParsedPackages, ParsedProto } from './types'
 import { findMessageName } from './utils'
 
 export class GrpcMessage extends GrpcType {
     msg: Type
-    parsedProto: ParsedProtoMap
 
-    constructor(msg: Type, parsedProto: ParsedProtoMap) {
+    constructor(msg: Type) {
         super(msg.fullName)
         this.msg = msg
-        this.parsedProto = parsedProto
     }
 
-    toTS() {
+    toTS(parsedProto: ParsedPackages) {
         let fields = this.msg.fieldsArray
 
         let generatedOneOfFields = ``
@@ -25,7 +23,7 @@ export class GrpcMessage extends GrpcType {
                     const oneofKeyField = `${name}: '${field.name}'`
                     const oneofField = new GrpcMessageField(field)
 
-                    return `{\n${oneofField.toTS(this.parsedProto)}\n  ${oneofKeyField}\n}`
+                    return `{\n${oneofField.toTS(parsedProto)}\n  ${oneofKeyField}\n}`
                 }).join(' |\n')
 
                 generatedOneOfFields += ` & (\n${oneofFields} | {}\n)`
@@ -38,7 +36,7 @@ export class GrpcMessage extends GrpcType {
 ${
                 fields.map(field => {
                     const msgField = new GrpcMessageField(field)
-                    return msgField.toTS(this.parsedProto)
+                    return msgField.toTS(parsedProto)
                 }).join('\n')
             }
 `
@@ -55,7 +53,7 @@ export class GrpcMessageField {
         this.field = field
     }
 
-    toTS(parsedProto: ParsedProtoMap) {
+    toTS(parsedProto: ParsedProto['parsedPackages']) {
         const { name, type, repeated } = this.field
         let scalarType = grpcScalarTypeToTSType(type)
 
