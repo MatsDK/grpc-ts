@@ -1,6 +1,7 @@
 import { Method, Service } from 'protobufjs'
-import { GrpcType } from './grpcTypes'
+import { grpcScalarTypeToTSType, GrpcType } from './grpcTypes'
 import { ParsedPackages } from './types'
+import { formatName } from './utils'
 
 export class GrpcService extends GrpcType {
     service: Service
@@ -24,7 +25,7 @@ ${
 `
         }
 
-        return `export type ${this.fullName} = { ${methodsOutput} } `
+        return `export type ${this.fullName} = {${methodsOutput}}`
     }
 }
 
@@ -36,9 +37,21 @@ class Rpc {
     }
 
     toTS() {
-        const rpcParams = ``
-        const rpcReturn = ``
+        let requestType = grpcScalarTypeToTSType(this.method.requestType),
+            responseType = grpcScalarTypeToTSType(this.method.requestType)
 
-        return `  '${this.method.name}': () => void `
+        if (!requestType) {
+            requestType = formatName(this.method.requestType.split('.'))
+        }
+        if (!responseType) {
+            responseType = formatName(this.method.responseType.split('.'))
+        }
+
+        console.log(this.method.fullName)
+
+        const rpcParams = this.method.requestStream ? `grpc_ts.Stream<${requestType}>` : `${requestType}`
+        const rpcReturn = this.method.responseStream ? `grpc_ts.Stream<${responseType}>` : `${responseType}`
+
+        return `  '${this.method.name}': (arg: ${rpcParams}) => ${rpcReturn} `
     }
 }

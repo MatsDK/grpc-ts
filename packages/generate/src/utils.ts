@@ -1,4 +1,5 @@
 import { Field } from 'protobufjs'
+import { TAB_SIZE } from './constants'
 import { ParsedPackages } from './types'
 
 export const findMessageName = (field: Field, parsedProto: ParsedPackages) => {
@@ -37,3 +38,7 @@ export const getAllNamesFromParsedProto = (parsedProto: ParsedPackages) => {
 export const formatName = (parts: string[]) =>
     parts
         .map(value => value.charAt(0).toUpperCase() + value.slice(1)).join('')
+
+export const i = (value: string) => {
+    return value.split('\n').map(v => `${' '.repeat(TAB_SIZE)}${v}`).join('\n')
+}
