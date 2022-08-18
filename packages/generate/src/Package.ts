@@ -22,7 +22,6 @@ export class Package {
 ${this.messages.map((message) => message.toTS(protoParser)).join('\n')}
 ${this.enums.map((_enum) => _enum.toTS()).join('\n')}
 ${this.services.map((service) => service.toTS(protoParser)).join('\n')}
-${Object.entries(this.packages).map(([, pkg]) => pkg.toTS(protoParser)).join('\n')}
-`
+${Object.entries(this.packages).map(([, pkg]) => pkg.toTS(protoParser)).join('\n')}`
     }
 }

@@ -7,9 +7,6 @@
     "scripts": {
         "build": "tsc --build"
     },
-    "files": [
-        "src"
-    ],
     "keywords": [],
     "author": "",
     "license": "ISC",

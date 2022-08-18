@@ -4,10 +4,14 @@ import { GrpcMessage } from './Message'
 import { Package } from './Package'
 import { GrpcService } from './Service'
 
+interface ProtoParserOptions {
+    protoPaths: string[]
+}
+
 export class ProtoParser {
     parsed: Package = new Package()
 
-    constructor({ protoPaths }: { protoPaths: string[] }) {
+    constructor({ protoPaths }: ProtoParserOptions) {
         const protoRoot = loadSync(protoPaths)
         if (!protoRoot.nested) return
 

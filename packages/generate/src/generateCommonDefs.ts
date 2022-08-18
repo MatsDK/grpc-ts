@@ -1,15 +1,18 @@
 import { ProtoParser } from './parseProtoObj'
-import { i } from './utils'
+import { ExportCollector, i } from './utils'
 
 interface CommonDefsGeneratorOptions {
     protoParser: ProtoParser
+    exportCollector: ExportCollector
 }
 
 export class CommonDefsGenerator {
     readonly protoParser: ProtoParser
+    readonly exportCollector: ExportCollector
 
     constructor(readonly options: CommonDefsGeneratorOptions) {
         this.protoParser = options.protoParser
+        this.exportCollector = options.exportCollector
     }
 
     toTS() {
@@ -17,11 +20,20 @@ export class CommonDefsGenerator {
 
         return `${defaultGrpcTSDefs()}
 ${parsed.toTS(this.protoParser)}
+${this.exportCollector.tsExports.join('\n')}
 `
     }
 
     toJS() {
-        return `const parsedDef = \`${JSON.stringify(this.protoParser.parsed, null, 2)}\``
+        return `
+const parsedDefString = \`${JSON.stringify(this.protoParser.parsed, null, 2)}\`
+const parsedDef = JSON.parse(parsedDefString)
+
+export const config = {
+    parsedDef
+}
+${this.exportCollector.jsExports.join('\n')}
+`
     }
 }
 

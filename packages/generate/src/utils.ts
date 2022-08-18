@@ -45,3 +45,16 @@ export const formatName = (parts: string[]) =>
         .map(value => value.charAt(0).toUpperCase() + value.slice(1)).join('')
 
 export const i = (value: string) => value.split('\n').map(v => `${' '.repeat(TAB_SIZE)}${v}`).join('\n')
+
+export class ExportCollector {
+    tsExports: string[] = []
+    jsExports: string[] = []
+
+    addExport(type: 'JS' | 'TS', exportLine: string) {
+        if (type === 'JS') {
+            this.jsExports.push(exportLine)
+        } else {
+            this.tsExports.push(exportLine)
+        }
+    }
+}
