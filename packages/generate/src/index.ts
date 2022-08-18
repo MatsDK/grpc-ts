@@ -1,10 +1,10 @@
-import { GrpcTsServerGenerator } from '@grpc-ts/server/src/ServerGenerator'
 import { mkdir, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import { loadSync } from 'protobufjs'
 import { CommonDefsGenerator } from './generateCommonDefs'
 import { ProtoParser } from './parseProtoObj'
+import { GrpcTsServerGenerator } from './ServerGenerator'
 import { ExportCollector } from './utils'
 
 const makeDir = promisify(mkdir)

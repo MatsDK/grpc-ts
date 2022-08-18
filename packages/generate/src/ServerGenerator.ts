@@ -1,4 +1,4 @@
-import { ExportCollector } from '@grpc-ts/generate'
+import { ExportCollector } from './utils'
 
 interface GrpcServerGeneratorOptions {
     exportCollector: ExportCollector

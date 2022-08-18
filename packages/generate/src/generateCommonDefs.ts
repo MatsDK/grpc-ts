@@ -1,5 +1,6 @@
 import { ProtoParser } from './parseProtoObj'
-import { ExportCollector, i } from './utils'
+import { i } from './utils'
+import { ExportCollector } from './utils'
 
 interface CommonDefsGeneratorOptions {
     protoParser: ProtoParser
