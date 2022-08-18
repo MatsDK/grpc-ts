@@ -1,50 +1,27 @@
-import { ParsedProto } from './types'
+import { ProtoParser } from './parseProtoObj'
 import { i } from './utils'
 
 interface CommonDefsGeneratorOptions {
-    parsedProto: ParsedProto['parsedPackages']
+    protoParser: ProtoParser
 }
 
 export class CommonDefsGenerator {
-    readonly parsedPackages: ParsedProto['parsedPackages']
+    readonly protoParser: ProtoParser
 
     constructor(readonly options: CommonDefsGeneratorOptions) {
-        this.parsedPackages = options.parsedProto
+        this.protoParser = options.protoParser
     }
 
     toTS() {
+        const { parsed } = this.protoParser
+
         return `${defaultGrpcTSDefs()}
-${
-            Object.entries(this.parsedPackages)
-                .map(([name, { messages, enums, services }]) => {
-                    return `// ${name}
-
-// Message definitions
-${
-                        messages.map(msg => {
-                            return msg.toTS(this.parsedPackages)
-                        }).join('\n\n')
-                    }
-// Enum definitions
-${
-                        enums.map(e => {
-                            return e.toTS()
-                        }).join('\n\n')
-                    }
-// Service definitions
-${
-                        services.map(service => {
-                            return service.toTS(this.parsedPackages)
-                        }).join('\n\n')
-                    }
-
-				`
-                }).join('\n')
-        }`
+${parsed.toTS(this.protoParser)}
+`
     }
 
     toJS() {
-        return `const parsedDef = \`${JSON.stringify(this.parsedPackages)}\``
+        return `const parsedDef = \`${JSON.stringify(this.protoParser.parsed, null, 2)}\``
     }
 }
 

@@ -1,7 +1,7 @@
 import { Method, Service } from 'protobufjs'
 import { grpcScalarTypeToTSType, GrpcType } from './grpcTypes'
-import { ParsedPackages } from './types'
-import { formatName } from './utils'
+import { ProtoParser } from './parseProtoObj'
+import { formatName, i, msgNameExists } from './utils'
 
 export class GrpcService extends GrpcType {
     service: Service
@@ -11,7 +11,7 @@ export class GrpcService extends GrpcType {
         this.service = service
     }
 
-    toTS(parsedPackages: ParsedPackages) {
+    toTS(protoParser: ProtoParser) {
         const methods = Object.entries(this.service.methods)
 
         let methodsOutput = ``
@@ -19,7 +19,7 @@ export class GrpcService extends GrpcType {
             methodsOutput = `
 ${
                 methods
-                    .map(([, method]) => (new Rpc(method)).toTS())
+                    .map(([, method]) => (new Rpc(method)).toTS(protoParser))
                     .join('\n')
             }
 `
@@ -36,22 +36,42 @@ class Rpc {
         this.method = method
     }
 
-    toTS() {
+    toTS(protoParser: ProtoParser) {
         let requestType = grpcScalarTypeToTSType(this.method.requestType),
-            responseType = grpcScalarTypeToTSType(this.method.requestType)
+            responseType = grpcScalarTypeToTSType(this.method.responseType)
 
         if (!requestType) {
             requestType = formatName(this.method.requestType.split('.'))
+
+            if (!msgNameExists(protoParser.parsed, requestType)) {
+                if (this.method.requestType.split('.').length > 1) {
+                    console.log(`'${this.method.requestType}' not found`)
+                } else {
+                    requestType = formatName([
+                        ...(this.method.parent?.parent?.fullName || '').split('.'),
+                        ...this.method.requestType.split('.'),
+                    ])
+                }
+            }
         }
         if (!responseType) {
             responseType = formatName(this.method.responseType.split('.'))
-        }
 
-        console.log(this.method.fullName)
+            if (!msgNameExists(protoParser.parsed, responseType)) {
+                if (this.method.responseType.split('.').length > 1) {
+                    console.log(`'${this.method.responseType}' not found`)
+                } else {
+                    responseType = formatName([
+                        ...(this.method.parent?.parent?.fullName || '').split('.'),
+                        ...this.method.responseType.split('.'),
+                    ])
+                }
+            }
+        }
 
         const rpcParams = this.method.requestStream ? `grpc_ts.Stream<${requestType}>` : `${requestType}`
         const rpcReturn = this.method.responseStream ? `grpc_ts.Stream<${responseType}>` : `${responseType}`
 
-        return `  '${this.method.name}': (arg: ${rpcParams}) => ${rpcReturn} `
+        return i(`'${this.method.name}': (arg: ${rpcParams}) => ${rpcReturn} `)
     }
 }

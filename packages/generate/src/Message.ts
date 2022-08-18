@@ -1,7 +1,7 @@
 import { Field, Type } from 'protobufjs'
 import { grpcScalarTypeToTSType, GrpcType } from './grpcTypes'
-import { ParsedPackages, ParsedProto } from './types'
-import { findMessageName } from './utils'
+import { ProtoParser } from './parseProtoObj'
+import { findMessageName, i } from './utils'
 
 export class GrpcMessage extends GrpcType {
     msg: Type
@@ -11,7 +11,7 @@ export class GrpcMessage extends GrpcType {
         this.msg = msg
     }
 
-    toTS(parsedProto: ParsedPackages) {
+    toTS(protoParser: ProtoParser) {
         let fields = this.msg.fieldsArray
 
         let generatedOneOfFields = ``
@@ -23,7 +23,7 @@ export class GrpcMessage extends GrpcType {
                     const oneofKeyField = `${name}: '${field.name}'`
                     const oneofField = new GrpcMessageField(field)
 
-                    return `{\n${oneofField.toTS(parsedProto)}\n  ${oneofKeyField}\n}`
+                    return `{\n${oneofField.toTS(protoParser)}\n  ${oneofKeyField}\n}`
                 }).join(' |\n')
 
                 generatedOneOfFields += ` & (\n${oneofFields} | {}\n)`
@@ -36,7 +36,7 @@ export class GrpcMessage extends GrpcType {
 ${
                 fields.map(field => {
                     const msgField = new GrpcMessageField(field)
-                    return msgField.toTS(parsedProto)
+                    return msgField.toTS(protoParser)
                 }).join('\n')
             }
 `
@@ -53,14 +53,14 @@ export class GrpcMessageField {
         this.field = field
     }
 
-    toTS(parsedProto: ParsedProto['parsedPackages']) {
+    toTS(protoParser: ProtoParser) {
         const { name, type, repeated } = this.field
         let scalarType = grpcScalarTypeToTSType(type)
 
         if (!scalarType) {
-            scalarType = findMessageName(this.field, parsedProto)
+            scalarType = findMessageName(this.field, protoParser.parsed)
         }
 
-        return `  ${name}: ${scalarType}${(repeated || '') && '[]'}`
+        return i(`${name}: ${scalarType}${(repeated || '') && '[]'}`)
     }
 }

@@ -1,55 +1,40 @@
 import { Enum, loadSync, Namespace, NamespaceBase, Service, Type } from 'protobufjs'
 import { GrpcEnum } from './Enum'
 import { GrpcMessage } from './Message'
+import { Package } from './Package'
 import { GrpcService } from './Service'
-import { ParsedPackage, ParsedPackages, ParsedProto } from './types'
 
-export class ProtoParser implements ParsedProto {
-    parsedPackages: ParsedPackages = {}
+export class ProtoParser {
+    parsed: Package = new Package()
 
-    constructor() {}
-
-    parseObj(protoPaths: string[]) {
+    constructor({ protoPaths }: { protoPaths: string[] }) {
         const protoRoot = loadSync(protoPaths)
         if (!protoRoot.nested) return
 
-        this.parseNestedObj(protoRoot.nested)
-        return this.parsedPackages
+        this.parse(protoRoot.nested)
     }
 
-    private parseNestedObj(obj: NonNullable<NamespaceBase['nested']>, packageName: string = '') {
+    private parse(obj: NonNullable<NamespaceBase['nested']>, pkg: Package = this.parsed) {
         Object.entries(obj).forEach(([, obj]) => {
             switch (obj.constructor) {
                 case Type: {
                     const objAsType = obj as Type
-                    if (objAsType.nested) {
-                        this.parseNestedObj(objAsType.nested, packageName)
-                    }
+                    this.parseNested(objAsType, pkg)
 
-                    this.addMessage(packageName, new GrpcMessage(objAsType))
-
+                    pkg.messages.push(new GrpcMessage(objAsType))
                     break
                 }
                 case Enum: {
-                    this.addEnum(packageName, new GrpcEnum(obj as Enum))
-
+                    pkg.enums.push(new GrpcEnum(obj as Enum))
                     break
                 }
                 case Service: {
-                    this.addService(packageName, new GrpcService(obj as Service))
-
+                    pkg.services.push(new GrpcService(obj as Service))
                     break
                 }
                 case Namespace: {
                     const namespace = obj as Namespace
-                    if (namespace.nested) {
-                        const nestedPackageName = namespace.fullName.split('.')
-                            .map(value => value.charAt(0).toUpperCase() + value.slice(1))
-                            .join('')
-
-                        this.parseNestedObj(namespace.nested, nestedPackageName)
-                    }
-
+                    this.parseNested(namespace, pkg)
                     break
                 }
                 default: {
@@ -58,27 +43,14 @@ export class ProtoParser implements ParsedProto {
                 }
             }
         })
+
+        return pkg
     }
 
-    private getPkg(packageName: string): ParsedPackage {
-        return this.parsedPackages[packageName] || { enums: [], messages: [], services: [] }
-    }
-
-    private addMessage(packageName: string, msg: GrpcMessage) {
-        const pkg = this.getPkg(packageName)
-        pkg.messages.push(msg)
-        this.parsedPackages[packageName] = pkg
-    }
-
-    private addEnum(packageName: string, enum_: GrpcEnum) {
-        const pkg = this.getPkg(packageName)
-        pkg.enums.push(enum_)
-        this.parsedPackages[packageName] = pkg
-    }
-
-    private addService(packageName: string, service: GrpcService) {
-        const pkg = this.getPkg(packageName)
-        pkg.services.push(service)
-        this.parsedPackages[packageName] = pkg
+    private parseNested(obj: NamespaceBase, pkg: Package) {
+        if (obj.nested) {
+            const nestedParsedPkg = this.parse(obj.nested, new Package(obj.fullName))
+            pkg.packages[obj.name] = nestedParsedPkg
+        }
     }
 }

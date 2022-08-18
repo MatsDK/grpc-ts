@@ -1,4 +1,4 @@
-import { ParsedPackages } from './types'
+import { ProtoParser } from './parseProtoObj'
 
 export const grpcScalarTypeToTSType = (grpcType: string) => {
     switch (grpcType) {
@@ -37,7 +37,7 @@ export abstract class GrpcType {
         this.name = fullName
     }
 
-    abstract toTS(parsedPackages: ParsedPackages): string
+    abstract toTS(parsedPackages: ProtoParser): string
 
     get fullName() {
         return this.name.split('.')

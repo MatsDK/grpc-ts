@@ -17,9 +17,8 @@ export const generate = async ({ protoPaths, outDir }: GenerateOptions) => {
 
     if (!protoRoot.nested) return
 
-    const protoParser = new ProtoParser()
-    const parsedProto = protoParser.parseObj(protoPaths)!
-    const defsGenerator = new CommonDefsGenerator({ parsedProto })
+    const protoParser = new ProtoParser({ protoPaths })
+    const defsGenerator = new CommonDefsGenerator({ protoParser })
 
     const outputFileMap: Record<string, string> = {}
 

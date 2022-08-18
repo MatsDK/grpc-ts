@@ -1,5 +1,6 @@
 import { Enum } from 'protobufjs'
 import { GrpcType } from './grpcTypes'
+import { i } from './utils'
 
 export class GrpcEnum extends GrpcType {
     enum_: Enum
@@ -11,7 +12,7 @@ export class GrpcEnum extends GrpcType {
 
     toTS() {
         return `export enum ${this.fullName} {
-${Object.keys(this.enum_.values).map(value => `  ${value}`).join(',\n')}
+${Object.keys(this.enum_.values).map(value => i(`${value}`)).join(',\n')}
 }`
     }
 }

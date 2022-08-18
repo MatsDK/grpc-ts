@@ -1,9 +1,9 @@
 import { Field } from 'protobufjs'
 import { TAB_SIZE } from './constants'
-import { ParsedPackages } from './types'
+import { Package } from './Package'
 
-export const findMessageName = (field: Field, parsedProto: ParsedPackages) => {
-    const { messages, enums } = getAllNamesFromParsedProto(parsedProto)
+export const findMessageName = (field: Field, parsedProto: Package) => {
+    const { messages, enums } = getAllNamesFromPackage(parsedProto)
     if (!field.parent?.fullName) return field.type
 
     const parentNameParts = (field.parent.fullName.split('.'))
@@ -19,26 +19,29 @@ export const findMessageName = (field: Field, parsedProto: ParsedPackages) => {
     return formatName(field.type.split('.'))
 }
 
-export const getAllNamesFromParsedProto = (parsedProto: ParsedPackages) => {
+export const getAllNamesFromPackage = (pkg: Package) => {
     let enumNames = [] as string[]
     let messageNames = [] as string[]
 
-    Object.entries(parsedProto).forEach(([, { messages, enums }]) => {
-        messages.forEach(({ fullName }) => {
-            messageNames.push(fullName)
-        })
-        enums.forEach(({ fullName }) => {
-            enumNames.push(fullName)
-        })
+    pkg.enums.forEach((e) => enumNames.push(e.fullName))
+    pkg.messages.forEach((m) => messageNames.push(m.fullName))
+
+    Object.entries(pkg.packages).forEach(([, nestedPkg]) => {
+        const nestedNames = getAllNamesFromPackage(nestedPkg)
+        enumNames = [...enumNames, ...nestedNames.enums]
+        messageNames = [...messageNames, ...nestedNames.messages]
     })
 
     return { enums: enumNames, messages: messageNames }
+}
+
+export const msgNameExists = (pkg: Package, name: string) => {
+    const { messages } = getAllNamesFromPackage(pkg)
+    return messages.includes(name)
 }
 
 export const formatName = (parts: string[]) =>
     parts
         .map(value => value.charAt(0).toUpperCase() + value.slice(1)).join('')
 
-export const i = (value: string) => {
-    return value.split('\n').map(v => `${' '.repeat(TAB_SIZE)}${v}`).join('\n')
-}
+export const i = (value: string) => value.split('\n').map(v => `${' '.repeat(TAB_SIZE)}${v}`).join('\n')
