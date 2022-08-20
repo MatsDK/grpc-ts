@@ -5,7 +5,8 @@
     "main": "src/index.ts",
     "scripts": {
         "build": "tsc --build",
-        "dev:generate": "tsnd src/index.ts generate"
+        "dev:generate": "tsnd src/index.ts generate",
+        "test": "tsnd test/index.ts"
     },
     "files": [
         "src"

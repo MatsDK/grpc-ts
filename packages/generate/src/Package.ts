@@ -7,7 +7,6 @@ import { formatName } from './utils'
 export class Package {
     pkgName: string
 
-    services: GrpcService[] = []
     messages: GrpcMessage[] = []
     enums: GrpcEnum[] = []
 
@@ -21,7 +20,6 @@ export class Package {
         return `// ${formatName(this.pkgName.split('.')) || 'Root'}
 ${this.messages.map((message) => message.toTS(protoParser)).join('\n')}
 ${this.enums.map((_enum) => _enum.toTS()).join('\n')}
-${this.services.map((service) => service.toTS(protoParser)).join('\n')}
 ${Object.entries(this.packages).map(([, pkg]) => pkg.toTS(protoParser)).join('\n')}`
     }
 }

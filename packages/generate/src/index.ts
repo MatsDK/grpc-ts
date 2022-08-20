@@ -24,7 +24,7 @@ export const generate = async ({ protoPaths, outDir }: GenerateOptions) => {
     const protoParser = new ProtoParser({ protoPaths })
     const defsGenerator = new CommonDefsGenerator({ protoParser, exportCollector })
 
-    const serverGenerator = new GrpcTsServerGenerator({ exportCollector })
+    const serverGenerator = new GrpcTsServerGenerator({ exportCollector, protoParser })
 
     const outputFileMap: Record<string, string> = {}
 

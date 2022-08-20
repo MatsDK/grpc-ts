@@ -1,5 +1,5 @@
 interface GrpcServerConfig {
-    parsedDef: any
+    serviceDocument: Record<string, any>
 }
 
 export const getGrpcServer = (config: GrpcServerConfig) => {

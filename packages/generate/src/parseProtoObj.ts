@@ -10,6 +10,7 @@ interface ProtoParserOptions {
 
 export class ProtoParser {
     parsed: Package = new Package()
+    services: Record<string, GrpcService> = {}
 
     constructor({ protoPaths }: ProtoParserOptions) {
         const protoRoot = loadSync(protoPaths)
@@ -33,7 +34,7 @@ export class ProtoParser {
                     break
                 }
                 case Service: {
-                    pkg.services.push(new GrpcService(obj as Service))
+                    this.services[obj.fullName.slice(1)] = new GrpcService(obj as Service)
                     break
                 }
                 case Namespace: {
