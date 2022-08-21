@@ -19,10 +19,17 @@ export class GrpcTsServerGenerator {
         return `import { ServicesMap } from '.'
 
 export class GrpcServer<TContext> {
-${i(`addServiceResolvers<TName extends keyof ServicesMap>(serviceName: TName, resolvers: any): GrpcServer<TContext>`)}
+${
+            i(`addServiceResolvers<TName extends keyof ServicesMap<TContext>, TResolvers extends ServicesMap<TContext>[TName]>(
+${
+                i(`serviceName: TName, 
+resolvers: TResolvers`)
+            }
+): GrpcServer<TContext>`)
+        }
 }
 
-declare function createGrpcServer<TContext = {}>(): GrpcServer<TContext>
+export function createGrpcServer<TContext = {}>(): GrpcServer<TContext>
 `
     }
 
@@ -37,7 +44,7 @@ declare function createGrpcServer<TContext = {}>(): GrpcServer<TContext>
         return `const { getGrpcServer } = require("@grpc-ts/server/src/runtime")
 const { config } = require(".")
 
-exports.GrpcServer = getGrpcServer(config)
+// exports.GrpcServer = getGrpcServer(config)
 
 exports.createGrpcServer = () => {
   return getGrpcServer(config)

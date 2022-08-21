@@ -25,7 +25,7 @@ ${
 `
         }
 
-        return `export type ${this.fullName} = {${methodsOutput}}`
+        return `export type ${this.fullName}<TContext = {}> = {${methodsOutput}}`
     }
 }
 
@@ -69,9 +69,6 @@ class Rpc {
             }
         }
 
-        const rpcParams = this.method.requestStream ? `grpc_ts.Stream<${requestType}>` : `${requestType}`
-        const rpcReturn = this.method.responseStream ? `grpc_ts.Stream<${responseType}>` : `${responseType}`
-
-        return i(`'${this.method.name}': (arg: ${rpcParams}) => ${rpcReturn} `)
+        return i(`'${this.method.name}': grpc_ts.RpcResolver<TContext, ${requestType}, ${responseType}>`)
     }
 }

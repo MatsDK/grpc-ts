@@ -24,7 +24,7 @@ export class CommonDefsGenerator {
             serviceMapFields = `
 ${
                 Object.entries(services).map(([servicePath, service]) => {
-                    return i(`'${servicePath}': ${service.fullName}`)
+                    return i(`'${servicePath}': ${service.fullName}<TContext>`)
                 }).join('\n')
             }
 `
@@ -42,7 +42,7 @@ ${
             }).join('\n\n')
         }
 // Services Map
-export type ServicesMap = {${serviceMapFields}}
+export type ServicesMap<TContext = {}> = {${serviceMapFields}}
 
 ${this.exportCollector.tsExports.join('\n')}
 `
@@ -62,11 +62,16 @@ ${this.exportCollector.jsExports.join('\n')}
 
 const defaultGrpcTSDefs = () =>
     `declare namespace grpc_ts {
-
 ${
-        i(`type Stream<T> = { 
-${i(`inner: T`)}
-}`)
-    }
+        i(`
+type RpcResolverParams<TContext, TRequest> = {
+${
+            i(`ctx: TContext,
+request: TRequest`)
+        }
+}
 
+type RpcResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
+`)
+    }
 }`
