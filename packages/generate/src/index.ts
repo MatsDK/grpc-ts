@@ -20,9 +20,10 @@ export const generate = async ({ protoPaths, outDir }: GenerateOptions) => {
     if (!protoRoot.nested) return
 
     const exportCollector = new ExportCollector()
+    const config: Record<string, string> = {}
 
     const protoParser = new ProtoParser({ protoPaths })
-    const defsGenerator = new CommonDefsGenerator({ protoParser, exportCollector })
+    const defsGenerator = new CommonDefsGenerator({ protoParser, exportCollector, config })
 
     const serverGenerator = new GrpcTsServerGenerator({ exportCollector, protoParser })
 

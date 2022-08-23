@@ -5,15 +5,19 @@ import { ExportCollector } from './utils'
 interface CommonDefsGeneratorOptions {
     protoParser: ProtoParser
     exportCollector: ExportCollector
+    config: Record<string, string>
 }
 
 export class CommonDefsGenerator {
     readonly protoParser: ProtoParser
     readonly exportCollector: ExportCollector
 
+    configExport: Record<string, string>
+
     constructor(readonly options: CommonDefsGeneratorOptions) {
         this.protoParser = options.protoParser
         this.exportCollector = options.exportCollector
+        this.configExport = options.config
     }
 
     toTS() {
@@ -49,11 +53,17 @@ ${this.exportCollector.tsExports.join('\n')}
     }
 
     toJS() {
+        this.configExport['serviceDocument'] = `JSON.parse(serviceDefsString)`
+        this.configExport['protoPaths'] = `${JSON.stringify(this.protoParser.protoPaths)}`
+
         return `const serviceDefsString = \`${JSON.stringify(this.protoParser.services, null, 2)}\`
-const serviceDefs = JSON.parse(serviceDefsString)
 
 exports.config = {
-    serviceDocument: serviceDefs
+${
+            Object.entries(this.configExport).map(([key, value]) => {
+                return `  ${key}: ${value}`
+            }).join(',\n')
+        }
 }
 ${this.exportCollector.jsExports.join('\n')}
 `

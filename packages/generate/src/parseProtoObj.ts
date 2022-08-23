@@ -11,8 +11,10 @@ interface ProtoParserOptions {
 export class ProtoParser {
     parsed: Package = new Package()
     services: Record<string, GrpcService> = {}
+    protoPaths: string[]
 
     constructor({ protoPaths }: ProtoParserOptions) {
+        this.protoPaths = protoPaths
         const protoRoot = loadSync(protoPaths)
         if (!protoRoot.nested) return
 

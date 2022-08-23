@@ -69,8 +69,10 @@ importers:
       '@grpc/grpc-js': ^1.6.7
       '@grpc/proto-loader': ^0.7.0
       '@types/glob': ^7.2.0
+      '@types/lodash': ^4.14.184
       '@types/node': ^18.0.0
       glob: ^8.0.3
+      lodash: ^4.17.21
       reflect-metadata: ^0.1.13
       ts-node-dev: ^2.0.0
       typescript: ^4.7.4
@@ -78,9 +80,11 @@ importers:
       '@grpc/grpc-js': 1.6.7
       '@grpc/proto-loader': 0.7.0
       glob: 8.0.3
+      lodash: 4.17.21
       reflect-metadata: 0.1.13
     devDependencies:
       '@types/glob': 7.2.0
+      '@types/lodash': 4.14.184
       '@types/node': 18.0.0
       ts-node-dev: 2.0.0_qiyc72axg2v44xl4yovan2v55u
       typescript: 4.7.4
@@ -219,6 +223,10 @@ packages:
     dependencies:
       '@types/minimatch': 3.0.5
       '@types/node': 18.0.0
+    dev: true
+
+  /@types/lodash/4.14.184:
+    resolution: {integrity: sha512-RoZphVtHbxPZizt4IcILciSWiC6dcn+eZ8oX9IWEYfDMcocdd42f7NPI6fQj+6zI8y4E0L7gu2pcZKLGTRaV9Q==}
     dev: true
 
   /@types/long/4.0.2:
@@ -771,6 +779,10 @@ packages:
 
   /lodash.camelcase/4.3.0:
     resolution: {integrity: sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA==}
+    dev: false
+
+  /lodash/4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
     dev: false
 
   /long/4.0.0:

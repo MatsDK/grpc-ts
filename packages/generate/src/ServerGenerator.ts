@@ -1,9 +1,17 @@
 import { ProtoParser } from './parseProtoObj'
-import { ExportCollector, formatName, i } from './utils'
+import { ExportCollector, i } from './utils'
 
 interface GrpcServerGeneratorOptions {
     exportCollector: ExportCollector
     protoParser: ProtoParser
+}
+
+const loaderOptions = {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true,
 }
 
 export class GrpcTsServerGenerator {
@@ -19,6 +27,9 @@ export class GrpcTsServerGenerator {
         return `import { ServicesMap } from '.'
 
 export class GrpcServer<TContext> {
+
+${i(`listen(url: string, cb?: (error: Error | null, port: number) => void): void`)}
+
 ${
             i(`addServiceResolvers<TName extends keyof ServicesMap<TContext>, TResolvers extends ServicesMap<TContext>[TName]>(
 ${
@@ -41,13 +52,13 @@ export function createGrpcServer<TContext = {}>(): GrpcServer<TContext>
 }`,
         )
 
-        return `const { getGrpcServer } = require("@grpc-ts/server/src/runtime")
+        return `const { GrpcServer } = require("@grpc-ts/server/src/runtime")
 const { config } = require(".")
 
 // exports.GrpcServer = getGrpcServer(config)
 
 exports.createGrpcServer = () => {
-  return getGrpcServer(config)
+  return new GrpcServer(config)
 }
 `
     }
