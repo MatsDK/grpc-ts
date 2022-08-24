@@ -8,11 +8,11 @@ export const arg = <T extends Arg.Spec>(
 ): Arg.Result<T> | Error => {
     try {
         return Arg(spec, { argv, stopAtPositional, permissive })
-    } catch (e: any) {
+    } catch (e) {
         return e
     }
 }
 
-export const isError = (result: any): result is Error => {
+export const isError = <T extends Arg.Spec>(result: Error | Arg.Result<T>): result is Error => {
     return result instanceof Error
 }

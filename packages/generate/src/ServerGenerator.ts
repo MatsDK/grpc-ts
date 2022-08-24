@@ -6,14 +6,6 @@ interface GrpcServerGeneratorOptions {
     protoParser: ProtoParser
 }
 
-const loaderOptions = {
-    keepCase: true,
-    longs: String,
-    enums: String,
-    defaults: true,
-    oneofs: true,
-}
-
 export class GrpcTsServerGenerator {
     opts: GrpcServerGeneratorOptions
 

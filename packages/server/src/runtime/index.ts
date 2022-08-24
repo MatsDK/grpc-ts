@@ -1,9 +1,16 @@
-import { GrpcObject, loadPackageDefinition, Server, ServerCredentials, ServiceClientConstructor } from '@grpc/grpc-js'
+import {
+    GrpcObject,
+    loadPackageDefinition,
+    Server,
+    ServerCredentials,
+    ServiceClientConstructor,
+    UntypedServiceImplementation,
+} from '@grpc/grpc-js'
 import { loadSync } from '@grpc/proto-loader'
 import _ from 'lodash'
 
 interface GrpcServerConfig {
-    serviceDocument: Record<string, any>
+    serviceDocument: Record<string, object>
     protoPaths: string[]
 }
 
@@ -29,7 +36,7 @@ export class GrpcServer {
         this.server = new Server()
     }
 
-    addServiceResolvers(name: string, resolvers: any) {
+    addServiceResolvers(name: string, resolvers: UntypedServiceImplementation) {
         if (!(name in this.config.serviceDocument)) {
             console.log(`Service: '${name}' does not exist`)
             return this
@@ -43,8 +50,6 @@ export class GrpcServer {
     }
 
     listen(url: string, cb?: (error: Error | null, port: number) => void) {
-        console.log(this.server)
-
         this.server.bindAsync(url, ServerCredentials.createInsecure(), (error, port) => {
             this.server.start()
 

@@ -1,7 +1,6 @@
 import { GrpcEnum } from './Enum'
 import { GrpcMessage } from './Message'
 import { ProtoParser } from './parseProtoObj'
-import { GrpcService } from './Service'
 import { formatName } from './utils'
 
 export class Package {
@@ -12,7 +11,7 @@ export class Package {
 
     packages: Record<string, Package> = {}
 
-    constructor(name: string = '') {
+    constructor(name = '') {
         this.pkgName = name
     }
 

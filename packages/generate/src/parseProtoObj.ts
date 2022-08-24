@@ -45,7 +45,7 @@ export class ProtoParser {
                     break
                 }
                 default: {
-                    const constructorName = (obj as any).constructor.name
+                    const constructorName = obj.constructor.name
                     console.log(`'${constructorName}' is currently not supported`)
                 }
             }
