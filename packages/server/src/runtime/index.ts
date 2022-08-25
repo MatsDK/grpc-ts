@@ -1,5 +1,6 @@
 import {
     GrpcObject,
+    handleUnaryCall,
     loadPackageDefinition,
     Server,
     ServerCredentials,
@@ -13,6 +14,14 @@ interface GrpcServerConfig {
     serviceDocument: Record<string, object>
     protoPaths: string[]
 }
+
+type ResolverFnInput = {
+    ctx: object
+    request: object
+    meta: Record<string, string | Buffer>
+}
+
+type ResolverFn = (input: ResolverFnInput) => (any | Promise<any>)
 
 const loaderOptions = {
     keepCase: true,
@@ -36,7 +45,7 @@ export class GrpcServer {
         this.server = new Server()
     }
 
-    addServiceResolvers(name: string, resolvers: UntypedServiceImplementation) {
+    addServiceResolvers(name: string, resolvers: Record<string, ResolverFn>) {
         if (!(name in this.config.serviceDocument)) {
             console.log(`Service: '${name}' does not exist`)
             return this
@@ -44,7 +53,31 @@ export class GrpcServer {
 
         const serviceDef = _.get(this.protoDescriptor, name) as ServiceClientConstructor
         if (!serviceDef) return
-        this.server.addService(serviceDef.service, resolvers)
+
+        const builtHandlers = Object.entries(resolvers)
+            .map(([name, resolver]) => {
+                const handlerFn: handleUnaryCall<any, any> = async (call, callBack) => {
+                    try {
+                        const response = await resolver({
+                            ctx: {},
+                            meta: call.metadata.getMap(),
+                            request: call.request,
+                        })
+                        callBack(null, response)
+                    } catch (e) {
+                        callBack(e as any)
+                    }
+                }
+
+                return [name, handlerFn] as const
+            })
+            .reduce((prev, [name, handler]) => {
+                prev[name] = handler
+                return prev
+            }, {} as UntypedServiceImplementation)
+
+        console.log(builtHandlers)
+        this.server.addService(serviceDef.service, builtHandlers)
 
         return this
     }

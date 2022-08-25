@@ -77,7 +77,8 @@ ${
 type RpcResolverParams<TContext, TRequest> = {
 ${
             i(`ctx: TContext,
-request: TRequest`)
+request: TRequest,
+meta: Record<string, string | Buffer>`)
         }
 }
 

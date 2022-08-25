@@ -29,6 +29,10 @@
         "ts-node-dev": "^2.0.0"
     },
     "grpc_ts": {
-        "protoPaths": "proto/*.proto"
+        "protoPaths": "proto/*.proto",
+        "generate": {
+            "server": true,
+            "client": false
+        }
     }
 }
