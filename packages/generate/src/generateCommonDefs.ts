@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events'
 import { ProtoParser } from './parseProtoObj'
 import { i } from './utils'
 import { ExportCollector } from './utils'
@@ -57,6 +56,7 @@ ${this.exportCollector.tsExports.join('\n')}
         this.configExport['serviceDocument'] = `JSON.parse(serviceDefsString)`
         this.configExport['protoPaths'] = `${JSON.stringify(this.protoParser.protoPaths)}`
 
+        console.log(this.protoParser.services)
         return `const serviceDefsString = \`${JSON.stringify(this.protoParser.services, null, 2)}\`
 
 exports.config = {
@@ -94,17 +94,9 @@ on(event: string, listener: Function): this;`)
 
 class ClientStream<TRequest> extends EventEmitter { }
 
-type ClientStreamResolverParams<TContext, TRequest> = {
-${
-            i(`ctx: TContext,
-request: ClientStream<TRequest>,
-meta: Record<string, string | Buffer>`)
-        }
-}
-
 type UnaryResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
 
-type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: ClientStreamResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
+type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, ClientStream<TRequest>>) => Promise<TResponse> | TResponse
 
 type ServerStreamResolver<TContext, TRequest, TResponse> = UnaryResolver<TContext, TRequest, TResponse>
 

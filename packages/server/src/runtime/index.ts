@@ -12,18 +12,24 @@ import {
 import { loadSync } from '@grpc/proto-loader'
 import _ from 'lodash'
 
+interface Service {
+    name: string
+    service: {
+        methods: Record<string, {
+            requestType: string
+            requestStream: boolean
+            responseType: string
+            responseStream: boolean
+        }>
+    }
+}
+
 interface GrpcServerConfig {
-    serviceDocument: Record<string, object>
+    serviceDocument: Record<string, Service>
     protoPaths: string[]
 }
 
-type ResolverFnInput = {
-    ctx: object
-    request: object
-    meta: Record<string, string | Buffer>
-}
-
-type ResolverFn = (input: ResolverFnInput) => (any | Promise<any>)
+type ResolverFn = Function
 
 const loaderOptions = {
     keepCase: true,
@@ -56,50 +62,59 @@ export class GrpcServer {
         const serviceDef = _.get(this.protoDescriptor, name) as ServiceClientConstructor
         if (!serviceDef) return
 
-        const rpcs = this.config.serviceDocument[name] as any
+        const builtHandlers = this.buildHandlersForService(name, resolvers)
+        this.server.addService(serviceDef.service, builtHandlers)
 
-        const builtHandlers = Object.entries(resolvers)
+        return this
+    }
+
+    private buildHandlersForService(serviceName: string, resolvers: Record<string, ResolverFn>) {
+        const rpcs = this.config.serviceDocument[serviceName]
+
+        return Object.entries(resolvers)
             .map(([name, resolver]) => {
                 const rpc = rpcs.service.methods[name]
 
                 let handlerFn: UntypedHandleCall
-                if (!rpc.requestStream) {
-                    handlerFn = (async (call, callBack) => {
-                        try {
-                            const response = await resolver({
-                                ctx: {},
-                                meta: call.metadata.getMap(),
-                                request: call.request,
-                            })
-                            callBack(null, response)
-                        } catch (e) {
-                            callBack(e as any)
-                        }
-                    }) as handleUnaryCall<any, any>
-                } else {
-                    handlerFn = (async (call, callBack) => {
-                        try {
-                            const response = await resolver({
-                                ctx: {},
-                                meta: call.metadata.getMap(),
-                                request: call,
-                            })
-                            callBack(null, response)
-                        } catch (e) {
-                            callBack(e as any)
-                        }
-                    }) as handleClientStreamingCall<any, any>
-                }
+                if (rpc.requestStream) handlerFn = this.clientStreamingRpcHandler(resolver)
+                else handlerFn = this.unaryRpcHandler(resolver)
+
                 return [name, handlerFn] as const
             })
             .reduce((prev, [name, handler]) => {
                 prev[name] = handler
                 return prev
             }, {} as UntypedServiceImplementation)
+    }
 
-        this.server.addService(serviceDef.service, builtHandlers)
+    private unaryRpcHandler(resolver: Function): handleUnaryCall<any, any> {
+        return async (call, callBack) => {
+            try {
+                const response = await resolver({
+                    ctx: {},
+                    meta: call.metadata.getMap(),
+                    request: call.request,
+                })
+                callBack(null, response)
+            } catch (e) {
+                callBack(e as any)
+            }
+        }
+    }
 
-        return this
+    private clientStreamingRpcHandler(resolver: Function): handleClientStreamingCall<any, any> {
+        return async (call, callBack) => {
+            try {
+                const response = await resolver({
+                    ctx: {},
+                    meta: call.metadata.getMap(),
+                    request: call,
+                })
+                callBack(null, response)
+            } catch (e) {
+                callBack(e as any)
+            }
+        }
     }
 
     listen(url: string, cb?: (error: Error | null, port: number) => void) {
