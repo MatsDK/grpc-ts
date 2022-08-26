@@ -29,7 +29,7 @@ interface GrpcServerConfig {
     protoPaths: string[]
 }
 
-type ResolverFn = Function
+type ResolverFn = (...args: any) => any
 
 const loaderOptions = {
     keepCase: true,
@@ -87,7 +87,7 @@ export class GrpcServer {
             }, {} as UntypedServiceImplementation)
     }
 
-    private unaryRpcHandler(resolver: Function): handleUnaryCall<any, any> {
+    private unaryRpcHandler(resolver: ResolverFn): handleUnaryCall<any, any> {
         return async (call, callBack) => {
             try {
                 const response = await resolver({
@@ -102,7 +102,7 @@ export class GrpcServer {
         }
     }
 
-    private clientStreamingRpcHandler(resolver: Function): handleClientStreamingCall<any, any> {
+    private clientStreamingRpcHandler(resolver: ResolverFn): handleClientStreamingCall<any, any> {
         return async (call, callBack) => {
             try {
                 const response = await resolver({
