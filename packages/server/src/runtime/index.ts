@@ -1,18 +1,35 @@
 import {
     GrpcObject,
+    handleClientStreamingCall,
+    handleUnaryCall,
     loadPackageDefinition,
     Server,
     ServerCredentials,
     ServiceClientConstructor,
+    UntypedHandleCall,
     UntypedServiceImplementation,
 } from '@grpc/grpc-js'
 import { loadSync } from '@grpc/proto-loader'
 import _ from 'lodash'
 
+interface Service {
+    name: string
+    service: {
+        methods: Record<string, {
+            requestType: string
+            requestStream: boolean
+            responseType: string
+            responseStream: boolean
+        }>
+    }
+}
+
 interface GrpcServerConfig {
-    serviceDocument: Record<string, object>
+    serviceDocument: Record<string, Service>
     protoPaths: string[]
 }
+
+type ResolverFn = (...args: any) => any
 
 const loaderOptions = {
     keepCase: true,
@@ -36,7 +53,7 @@ export class GrpcServer {
         this.server = new Server()
     }
 
-    addServiceResolvers(name: string, resolvers: UntypedServiceImplementation) {
+    addServiceResolvers(name: string, resolvers: Record<string, ResolverFn>) {
         if (!(name in this.config.serviceDocument)) {
             console.log(`Service: '${name}' does not exist`)
             return this
@@ -44,9 +61,60 @@ export class GrpcServer {
 
         const serviceDef = _.get(this.protoDescriptor, name) as ServiceClientConstructor
         if (!serviceDef) return
-        this.server.addService(serviceDef.service, resolvers)
+
+        const builtHandlers = this.buildHandlersForService(name, resolvers)
+        this.server.addService(serviceDef.service, builtHandlers)
 
         return this
+    }
+
+    private buildHandlersForService(serviceName: string, resolvers: Record<string, ResolverFn>) {
+        const rpcs = this.config.serviceDocument[serviceName]
+
+        return Object.entries(resolvers)
+            .map(([name, resolver]) => {
+                const rpc = rpcs.service.methods[name]
+
+                let handlerFn: UntypedHandleCall
+                if (rpc.requestStream) handlerFn = this.clientStreamingRpcHandler(resolver)
+                else handlerFn = this.unaryRpcHandler(resolver)
+
+                return [name, handlerFn] as const
+            })
+            .reduce((prev, [name, handler]) => {
+                prev[name] = handler
+                return prev
+            }, {} as UntypedServiceImplementation)
+    }
+
+    private unaryRpcHandler(resolver: ResolverFn): handleUnaryCall<any, any> {
+        return async (call, callBack) => {
+            try {
+                const response = await resolver({
+                    ctx: {},
+                    meta: call.metadata.getMap(),
+                    request: call.request,
+                })
+                callBack(null, response)
+            } catch (e) {
+                callBack(e as any)
+            }
+        }
+    }
+
+    private clientStreamingRpcHandler(resolver: ResolverFn): handleClientStreamingCall<any, any> {
+        return async (call, callBack) => {
+            try {
+                const response = await resolver({
+                    ctx: {},
+                    meta: call.metadata.getMap(),
+                    request: call,
+                })
+                callBack(null, response)
+            } catch (e) {
+                callBack(e as any)
+            }
+        }
     }
 
     listen(url: string, cb?: (error: Error | null, port: number) => void) {

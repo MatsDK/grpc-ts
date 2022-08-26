@@ -69,6 +69,16 @@ class Rpc {
             }
         }
 
-        return i(`'${this.method.name}': grpc_ts.RpcResolver<TContext, ${requestType}, ${responseType}>`)
+        let resolverType = 'UnaryResolver'
+
+        if (this.method.requestStream) {
+            if (this.method.responseStream) resolverType = 'BidiStreamResolver'
+            else resolverType = 'ClientStreamResolver'
+        } else if (this.method.responseStream) {
+            if (this.method.requestStream) resolverType = 'BidiStreamResolver'
+            else resolverType = 'ServerStreamResolver'
+        }
+
+        return i(`'${this.method.name}': grpc_ts.${resolverType}<TContext, ${requestType}, ${responseType}>`)
     }
 }

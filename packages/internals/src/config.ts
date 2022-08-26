@@ -3,10 +3,18 @@ import { z } from 'zod'
 
 // `./package.json`
 // "grpc_ts": {
-//   "protoPaths": ["proto/*.proto"]
+//   "protoPaths": ["proto/*.proto"],
+//   "generate": {
+//     "server": true,
+//     "client": false
+//   }
 // }
 const gprcTsPkgJsonConfig = z.object({
     protoPaths: z.string().optional().or(z.string().array()),
+    generate: z.object({
+        server: z.boolean().default(true),
+        client: z.boolean().default(true),
+    }).optional(),
 }).optional()
 
 type GrpcTsConfig = z.infer<typeof gprcTsPkgJsonConfig>

@@ -9,7 +9,7 @@ export const arg = <T extends Arg.Spec>(
     try {
         return Arg(spec, { argv, stopAtPositional, permissive })
     } catch (e) {
-        return e
+        return e as Error
     }
 }
 

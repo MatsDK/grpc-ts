@@ -32,7 +32,7 @@ resolvers: TResolvers`)
         }
 }
 
-export function createGrpcServer<TContext = {}>(): GrpcServer<TContext>
+export declare function createGrpcServer<TContext = {}>(): GrpcServer<TContext>
 `
     }
 
