@@ -1,10 +1,12 @@
 import {
     GrpcObject,
+    handleClientStreamingCall,
     handleUnaryCall,
     loadPackageDefinition,
     Server,
     ServerCredentials,
     ServiceClientConstructor,
+    UntypedHandleCall,
     UntypedServiceImplementation,
 } from '@grpc/grpc-js'
 import { loadSync } from '@grpc/proto-loader'
@@ -54,21 +56,40 @@ export class GrpcServer {
         const serviceDef = _.get(this.protoDescriptor, name) as ServiceClientConstructor
         if (!serviceDef) return
 
+        const rpcs = this.config.serviceDocument[name] as any
+
         const builtHandlers = Object.entries(resolvers)
             .map(([name, resolver]) => {
-                const handlerFn: handleUnaryCall<any, any> = async (call, callBack) => {
-                    try {
-                        const response = await resolver({
-                            ctx: {},
-                            meta: call.metadata.getMap(),
-                            request: call.request,
-                        })
-                        callBack(null, response)
-                    } catch (e) {
-                        callBack(e as any)
-                    }
-                }
+                const rpc = rpcs.service.methods[name]
 
+                let handlerFn: UntypedHandleCall
+                if (!rpc.requestStream) {
+                    handlerFn = (async (call, callBack) => {
+                        try {
+                            const response = await resolver({
+                                ctx: {},
+                                meta: call.metadata.getMap(),
+                                request: call.request,
+                            })
+                            callBack(null, response)
+                        } catch (e) {
+                            callBack(e as any)
+                        }
+                    }) as handleUnaryCall<any, any>
+                } else {
+                    handlerFn = (async (call, callBack) => {
+                        try {
+                            const response = await resolver({
+                                ctx: {},
+                                meta: call.metadata.getMap(),
+                                request: call,
+                            })
+                            callBack(null, response)
+                        } catch (e) {
+                            callBack(e as any)
+                        }
+                    }) as handleClientStreamingCall<any, any>
+                }
                 return [name, handlerFn] as const
             })
             .reduce((prev, [name, handler]) => {
@@ -76,7 +97,6 @@ export class GrpcServer {
                 return prev
             }, {} as UntypedServiceImplementation)
 
-        console.log(builtHandlers)
         this.server.addService(serviceDef.service, builtHandlers)
 
         return this

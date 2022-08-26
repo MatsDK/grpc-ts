@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events'
 import { ProtoParser } from './parseProtoObj'
 import { i } from './utils'
 import { ExportCollector } from './utils'
@@ -71,7 +72,9 @@ ${this.exportCollector.jsExports.join('\n')}
 }
 
 const defaultGrpcTSDefs = () =>
-    `declare namespace grpc_ts {
+    `import { EventEmitter } from "node:events"
+
+declare namespace grpc_ts {
 ${
         i(`
 type RpcResolverParams<TContext, TRequest> = {
@@ -82,7 +85,30 @@ meta: Record<string, string | Buffer>`)
         }
 }
 
-type RpcResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
+interface ClientStream<TRequest> {
+${
+            i(`on(event: 'data', listener: (data: TRequest) => void): this;
+on(event: string, listener: Function): this;`)
+        }
+}
+
+class ClientStream<TRequest> extends EventEmitter { }
+
+type ClientStreamResolverParams<TContext, TRequest> = {
+${
+            i(`ctx: TContext,
+request: ClientStream<TRequest>,
+meta: Record<string, string | Buffer>`)
+        }
+}
+
+type UnaryResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
+
+type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: ClientStreamResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
+
+type ServerStreamResolver<TContext, TRequest, TResponse> = UnaryResolver<TContext, TRequest, TResponse>
+
+type BidiStreamResolver<TContext, TRequest, TResponse> = UnaryResolver<TContext, TRequest, TResponse>
 `)
     }
 }`

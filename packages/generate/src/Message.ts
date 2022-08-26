@@ -26,7 +26,7 @@ export class GrpcMessage extends GrpcType {
                     return `{\n${oneofField.toTS(protoParser)}\n  ${oneofKeyField}\n}`
                 }).join(' |\n')
 
-                generatedOneOfFields += ` & (\n${oneofFields} | {}\n)`
+                generatedOneOfFields += ` & (\n${oneofFields}\n)`
             }).join(' |\n')
         }
 
