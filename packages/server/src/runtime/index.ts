@@ -1,6 +1,7 @@
 import {
     GrpcObject,
     handleClientStreamingCall,
+    handleServerStreamingCall,
     handleUnaryCall,
     loadPackageDefinition,
     Server,
@@ -75,9 +76,12 @@ export class GrpcServer {
             .map(([name, resolver]) => {
                 const rpc = rpcs.service.methods[name]
 
-                let handlerFn: UntypedHandleCall
-                if (rpc.requestStream) handlerFn = this.clientStreamingRpcHandler(resolver)
-                else handlerFn = this.unaryRpcHandler(resolver)
+                let handlerFn: UntypedHandleCall = null!
+
+                if (rpc.requestStream && rpc.responseStream) throw ('bidi not implented yet')
+                else if (rpc.requestStream) handlerFn = this.clientStreamingRpcHandler(resolver)
+                else if (rpc.responseStream) handlerFn = this.serverStreamingRpcHandler(resolver)
+                else if (!handlerFn) handlerFn = this.unaryRpcHandler(resolver)
 
                 return [name, handlerFn] as const
             })
@@ -95,9 +99,11 @@ export class GrpcServer {
                     meta: call.metadata.getMap(),
                     request: call.request,
                 })
+
                 callBack(null, response)
             } catch (e) {
-                callBack(e as any)
+                const error = e as Error
+                callBack({ message: error.message, name: error.name })
             }
         }
     }
@@ -112,7 +118,24 @@ export class GrpcServer {
                 })
                 callBack(null, response)
             } catch (e) {
-                callBack(e as any)
+                const error = e as Error
+                callBack({ message: error.message, name: error.name })
+            }
+        }
+    }
+
+    private serverStreamingRpcHandler(resolver: ResolverFn): handleServerStreamingCall<any, any> {
+        return async (call) => {
+            try {
+                await resolver({
+                    ctx: {},
+                    meta: call.metadata.getMap(),
+                    request: call.request,
+                    call,
+                })
+            } catch (e) {
+                const error = e as Error
+                call.emit('error', error)
             }
         }
     }

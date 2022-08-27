@@ -56,7 +56,6 @@ ${this.exportCollector.tsExports.join('\n')}
         this.configExport['serviceDocument'] = `JSON.parse(serviceDefsString)`
         this.configExport['protoPaths'] = `${JSON.stringify(this.protoParser.protoPaths)}`
 
-        console.log(this.protoParser.services)
         return `const serviceDefsString = \`${JSON.stringify(this.protoParser.services, null, 2)}\`
 
 exports.config = {
@@ -85,20 +84,24 @@ meta: Record<string, string | Buffer>`)
         }
 }
 
-interface ClientStream<TRequest> {
-${
-            i(`on(event: 'data', listener: (data: TRequest) => void): this;
-on(event: string, listener: Function): this;`)
-        }
+type ClientReadableStream<TRequest> = EventEmitter & {
+${i(`on(event: 'data', listener: (data: TRequest) => void): void`)}
 }
 
-class ClientStream<TRequest> extends EventEmitter { }
+type ServerWritableStream<TResponse> = EventEmitter & {
+${i(`write(chunk: TResponse): void`)}
+${i(`end(): void`)}
+}
+
+type ServerStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TContext, TRequest> & {
+${i(`call: ServerWritableStream<TResponse>`)}
+}
 
 type UnaryResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
 
-type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, ClientStream<TRequest>>) => Promise<TResponse> | TResponse
+type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, ClientReadableStream<TRequest>>) => Promise<TResponse> | TResponse
 
-type ServerStreamResolver<TContext, TRequest, TResponse> = UnaryResolver<TContext, TRequest, TResponse>
+type ServerStreamResolver<TContext, TRequest, TResponse> = (arg: ServerStreamRpcParams<TContext, TRequest, TResponse>) => void
 
 type BidiStreamResolver<TContext, TRequest, TResponse> = UnaryResolver<TContext, TRequest, TResponse>
 `)
