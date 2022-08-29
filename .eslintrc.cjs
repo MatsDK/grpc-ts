@@ -12,7 +12,7 @@ module.exports = {
     plugins: [
         '@typescript-eslint',
     ],
-    ignorePatterns: ['node_modules', 'dist'],
+    ignorePatterns: ['node_modules', 'dist', 'build'],
     rules: {
         '@typescript-eslint/no-non-null-assertion': 'off',
     },
