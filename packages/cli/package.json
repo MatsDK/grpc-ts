@@ -9,7 +9,8 @@
         "test": "tsnd test/index.ts"
     },
     "files": [
-        "src"
+        "src",
+        "dist"
     ],
     "bin": {
         "ts-grpc": "dist/index.js"
@@ -31,7 +32,6 @@
     "grpc_ts": {
         "protoPaths": "proto/*.proto",
         "generate": {
-            "server": true,
             "client": false
         }
     }

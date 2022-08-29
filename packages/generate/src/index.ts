@@ -12,25 +12,29 @@ const makeDir = promisify(mkdir)
 interface GenerateOptions {
     protoPaths: string[]
     outDir: string
+    generateClient: boolean
+    generateServer: boolean
 }
 
-export const generate = async ({ protoPaths, outDir }: GenerateOptions) => {
+export const generate = async ({ protoPaths, outDir, ...opts }: GenerateOptions) => {
+    const { generateClient, generateServer } = opts
     const protoRoot = loadSync(protoPaths)
 
     if (!protoRoot.nested) return
 
+    const outputFileMap: Record<string, string> = {}
     const exportCollector = new ExportCollector()
     const config: Record<string, string> = {}
 
     const protoParser = new ProtoParser({ protoPaths })
     const defsGenerator = new CommonDefsGenerator({ protoParser, exportCollector, config })
 
-    const serverGenerator = new GrpcTsServerGenerator({ exportCollector, protoParser })
+    if (generateServer) {
+        const serverGenerator = new GrpcTsServerGenerator({ exportCollector, protoParser })
 
-    const outputFileMap: Record<string, string> = {}
-
-    outputFileMap['server.d.ts'] = serverGenerator.toTS()
-    outputFileMap['server.js'] = serverGenerator.toJS()
+        outputFileMap['server.d.ts'] = serverGenerator.toTS()
+        outputFileMap['server.js'] = serverGenerator.toJS()
+    }
 
     outputFileMap['index.d.ts'] = defsGenerator.toTS()
     outputFileMap['index.js'] = defsGenerator.toJS()

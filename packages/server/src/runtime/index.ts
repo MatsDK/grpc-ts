@@ -1,5 +1,6 @@
 import {
     GrpcObject,
+    handleBidiStreamingCall,
     handleClientStreamingCall,
     handleServerStreamingCall,
     handleUnaryCall,
@@ -40,14 +41,20 @@ const loaderOptions = {
     oneofs: true,
 }
 
+type GrpcServerOptions = {
+    createContext: () => object
+}
+
 export class GrpcServer {
     private config: GrpcServerConfig
+    private options: GrpcServerOptions
 
     private protoDescriptor: GrpcObject
     private server: Server
 
-    constructor(config: GrpcServerConfig) {
+    constructor(config: GrpcServerConfig, options: GrpcServerOptions) {
         this.config = config
+        this.options = options
 
         const pkgDef = loadSync(config.protoPaths, loaderOptions)
         this.protoDescriptor = loadPackageDefinition(pkgDef)
@@ -78,7 +85,7 @@ export class GrpcServer {
 
                 let handlerFn: UntypedHandleCall = null!
 
-                if (rpc.requestStream && rpc.responseStream) throw ('bidi not implented yet')
+                if (rpc.requestStream && rpc.responseStream) handlerFn = this.bidiStreamingRpcHandler(resolver)
                 else if (rpc.requestStream) handlerFn = this.clientStreamingRpcHandler(resolver)
                 else if (rpc.responseStream) handlerFn = this.serverStreamingRpcHandler(resolver)
                 else if (!handlerFn) handlerFn = this.unaryRpcHandler(resolver)
@@ -95,7 +102,7 @@ export class GrpcServer {
         return async (call, callBack) => {
             try {
                 const response = await resolver({
-                    ctx: {},
+                    ctx: this.options.createContext(),
                     meta: call.metadata.getMap(),
                     request: call.request,
                 })
@@ -112,7 +119,7 @@ export class GrpcServer {
         return async (call, callBack) => {
             try {
                 const response = await resolver({
-                    ctx: {},
+                    ctx: this.options.createContext(),
                     meta: call.metadata.getMap(),
                     request: call,
                 })
@@ -128,9 +135,25 @@ export class GrpcServer {
         return async (call) => {
             try {
                 await resolver({
-                    ctx: {},
+                    ctx: this.options.createContext(),
                     meta: call.metadata.getMap(),
                     request: call.request,
+                    call,
+                })
+            } catch (e) {
+                const error = e as Error
+                call.emit('error', error)
+            }
+        }
+    }
+
+    private bidiStreamingRpcHandler(resolver: ResolverFn): handleBidiStreamingCall<any, any> {
+        return async (call) => {
+            try {
+                await resolver({
+                    ctx: this.options.createContext(),
+                    meta: call.metadata.getMap(),
+                    request: call,
                     call,
                 })
             } catch (e) {

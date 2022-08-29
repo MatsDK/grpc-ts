@@ -97,13 +97,17 @@ type ServerStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TC
 ${i(`call: ServerWritableStream<TResponse>`)}
 }
 
+type BidiStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TContext, ClientReadableStream<TRequest>> & {
+${i(`call: ServerWritableStream<TResponse>`)}
+}
+
 type UnaryResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
 
 type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, ClientReadableStream<TRequest>>) => Promise<TResponse> | TResponse
 
 type ServerStreamResolver<TContext, TRequest, TResponse> = (arg: ServerStreamRpcParams<TContext, TRequest, TResponse>) => void
 
-type BidiStreamResolver<TContext, TRequest, TResponse> = UnaryResolver<TContext, TRequest, TResponse>
+type BidiStreamResolver<TContext, TRequest, TResponse> = (arg: BidiStreamRpcParams<TContext, TRequest, TResponse>) => void
 `)
     }
 }`

@@ -26,6 +26,7 @@ export const getGrpcTsConfigFromPkgJson = () => {
     if (!pkgJson) return null
 
     const parseResult = gprcTsPkgJsonConfig.safeParse(GrpcTsPropertyFromPkgJson)
+    console.log(parseResult)
     if (!parseResult.success) {
         console.error(parseResult.error)
         return null

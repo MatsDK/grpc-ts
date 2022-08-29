@@ -32,7 +32,11 @@ resolvers: TResolvers`)
         }
 }
 
-export declare function createGrpcServer<TContext = {}>(): GrpcServer<TContext>
+type CreateGrpcServerOptions<TContext> = {
+    createContext: () => TContext,
+}
+
+export declare function createGrpcServer<TContext = {}>(options: CreateGrpcServerOptions<TContext>): GrpcServer<TContext>
 `
     }
 
@@ -49,8 +53,8 @@ const { config } = require(".")
 
 // exports.GrpcServer = getGrpcServer(config)
 
-exports.createGrpcServer = () => {
-  return new GrpcServer(config)
+exports.createGrpcServer = (options) => {
+  return new GrpcServer(config, options)
 }
 `
     }
