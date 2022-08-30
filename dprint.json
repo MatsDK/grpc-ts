@@ -12,7 +12,7 @@
         ]
     },
     "includes": [
-        "**/*.{ts,tsx,js,jsx,cjs,mjs,json,json5,md,yaml}"
+        "**/*.{ts,tsx,js,jsx,cjs,mjs,json,json5,yaml}"
     ],
     "excludes": [
         "**/node_modules",

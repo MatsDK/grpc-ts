@@ -12,28 +12,36 @@ import { z } from 'zod'
 const gprcTsPkgJsonConfig = z.object({
     protoPaths: z.string().optional().or(z.string().array()),
     generate: z.object({
-        server: z.boolean().default(true),
-        client: z.boolean().default(true),
+        server: z.boolean().optional(),
+        client: z.boolean().optional(),
     }).optional(),
 }).optional()
 
 type GrpcTsConfig = z.infer<typeof gprcTsPkgJsonConfig>
+type getConfigReturnType = {
+    pkgPath: string
+    config: GrpcTsConfig
+}
+
+let gprcTsConfig: getConfigReturnType
 
 export const getGrpcTsConfigFromPkgJson = () => {
+    if (gprcTsConfig) return gprcTsConfig
     const pkgJson = readPkgUp.sync({ cwd: process.cwd() })
     const GrpcTsPropertyFromPkgJson = pkgJson?.packageJson?.grpc_ts as GrpcTsConfig | undefined
 
     if (!pkgJson) return null
 
     const parseResult = gprcTsPkgJsonConfig.safeParse(GrpcTsPropertyFromPkgJson)
-    console.log(parseResult)
     if (!parseResult.success) {
         console.error(parseResult.error)
         return null
     }
 
-    return {
+    gprcTsConfig = {
         config: GrpcTsPropertyFromPkgJson,
         pkgPath: pkgJson.path,
     }
+
+    return gprcTsConfig
 }

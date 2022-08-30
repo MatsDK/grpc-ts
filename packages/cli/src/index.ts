@@ -1,7 +1,7 @@
 #! /usr/bin / env node
 
 import { generate } from '@grpc-ts/generate'
-import { findProtoPaths } from '@grpc-ts/internals'
+import { findProtoPaths, getGenerators } from '@grpc-ts/internals'
 import { parseArgs } from './utils/args'
 import { getOutputDir } from './utils/utils'
 
@@ -23,8 +23,7 @@ const main = async () => {
             return
         }
 
-        const generateClient = parsedArgs['--client'] === 'false' ? false : true,
-            generateServer = parsedArgs['--server'] === 'false' ? false : true
+        const { generateClient, generateServer } = getGenerators(parsedArgs['--client'], parsedArgs['--server'])
 
         await generate({
             protoPaths,
