@@ -33,7 +33,8 @@
     "grpc_ts": {
         "protoPaths": "proto/*.proto",
         "generate": {
-            "client": false
+            "client": true,
+            "server": true
         }
     }
 }

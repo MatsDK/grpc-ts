@@ -2,6 +2,7 @@ import { mkdir, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import { loadSync } from 'protobufjs'
+import { GrpcTsClientGenerator } from './ClientGenerator'
 import { CommonDefsGenerator } from './generateCommonDefs'
 import { ProtoParser } from './parseProtoObj'
 import { GrpcTsServerGenerator } from './ServerGenerator'
@@ -34,6 +35,13 @@ export const generate = async ({ protoPaths, outDir, ...opts }: GenerateOptions)
 
         outputFileMap['server.d.ts'] = serverGenerator.toTS()
         outputFileMap['server.js'] = serverGenerator.toJS()
+    }
+
+    if (generateClient) {
+        const clientGenerator = new GrpcTsClientGenerator({ exportCollector, protoParser })
+
+        outputFileMap['client.d.ts'] = clientGenerator.toTS()
+        outputFileMap['client.js'] = clientGenerator.toJS()
     }
 
     outputFileMap['index.d.ts'] = defsGenerator.toTS()
