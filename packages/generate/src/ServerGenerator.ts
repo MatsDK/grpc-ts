@@ -43,9 +43,7 @@ export declare function createGrpcServer<TContext = {}>(options: CreateGrpcServe
     toJS() {
         this.opts.exportCollector.addExport(
             'JS',
-            `module.exports = {
-  ...require("./server")
-}`,
+            `...require("./server")`,
         )
 
         return `const { GrpcServer } = require("@grpc-ts/server/src/runtime")

@@ -65,7 +65,10 @@ ${
             }).join(',\n')
         }
 }
-${this.exportCollector.jsExports.join('\n')}
+
+module.exports = {
+${i(`${this.exportCollector.jsExports.join(',\n')}`)}
+}
 `
     }
 }
