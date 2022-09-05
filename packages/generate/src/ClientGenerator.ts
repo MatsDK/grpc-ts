@@ -1,4 +1,6 @@
+import { Package } from './Package'
 import { ProtoParser } from './parseProtoObj'
+import { GrpcService } from './Service'
 import { ExportCollector } from './utils'
 
 interface GrpcClientGeneratorOptions {
@@ -15,6 +17,8 @@ export class GrpcTsClientGenerator {
 
     toTS() {
         this.opts.exportCollector.addExport('TS', `export * from "./client"`)
+
+        console.log(generateProxysForServices(this.opts.protoParser.services))
 
         return `import { ServicesMap } from '.'
 
@@ -40,4 +44,22 @@ exports.createGrpcClient = (options) => {
 }
 `
     }
+}
+
+const generateProxysForServices = (services: Record<string, GrpcService>, path = '') => {
+    const map: Map<string, any[]> = new Map()
+
+    Object.values(services).forEach((service) => {
+        const nameParts = service.name.split('.')
+        const path = nameParts.slice(0, -1).join('.')
+        const name = nameParts.pop() || ''
+
+        if (map.get(path)) {
+            map.set(path, [...map.get(path)!, name])
+        } else map.set(path, [name])
+    })
+
+    console.log(map)
+
+    return ``
 }
