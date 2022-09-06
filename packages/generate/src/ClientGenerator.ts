@@ -1,7 +1,7 @@
-import { Package } from './Package'
+import _ from 'lodash'
 import { ProtoParser } from './parseProtoObj'
 import { GrpcService } from './Service'
-import { ExportCollector } from './utils'
+import { ExportCollector, i } from './utils'
 
 interface GrpcClientGeneratorOptions {
     exportCollector: ExportCollector
@@ -18,12 +18,12 @@ export class GrpcTsClientGenerator {
     toTS() {
         this.opts.exportCollector.addExport('TS', `export * from "./client"`)
 
-        console.log(generateProxysForServices(this.opts.protoParser.services))
+        console.log()
 
         return `import { ServicesMap } from '.'
 
 export class GrpcClient {
-
+${i(generateProxysForServices(this.opts.protoParser.services))}
 }
 
 export declare function createGrpcClient(): GrpcClient
@@ -46,20 +46,31 @@ exports.createGrpcClient = (options) => {
     }
 }
 
-const generateProxysForServices = (services: Record<string, GrpcService>, path = '') => {
-    const map: Map<string, any[]> = new Map()
+type Services = Record<string, GrpcService>
+
+const generateProxysForServices = (services: Services) => {
+    const serviceRecord: Services = {}
 
     Object.values(services).forEach((service) => {
-        const nameParts = service.name.split('.')
-        const path = nameParts.slice(0, -1).join('.')
-        const name = nameParts.pop() || ''
-
-        if (map.get(path)) {
-            map.set(path, [...map.get(path)!, name])
-        } else map.set(path, [name])
+        _.set(serviceRecord, service.name.slice(1), service)
     })
 
-    console.log(map)
+    return applyServices(serviceRecord)
+}
 
-    return ``
+const applyServices = (services: Services) => {
+    let ret = ``
+
+    Object.entries(services).forEach(([name, service]) => {
+        if (service instanceof GrpcService) {
+            ret += `\nget ${name}(): any\n`
+        } else {
+            ret += `\nget ${name}(): {
+${i(applyServices(service))}
+}
+`
+        }
+    })
+
+    return ret
 }
