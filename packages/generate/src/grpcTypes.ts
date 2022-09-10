@@ -37,7 +37,7 @@ export abstract class GrpcType {
         this.name = fullName
     }
 
-    abstract toTS(parsedPackages: ProtoParser): string
+    abstract toTS(parsedPackages: ProtoParser, type?: string): string
 
     get fullName() {
         return this.name.split('.')
