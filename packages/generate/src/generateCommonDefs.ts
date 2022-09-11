@@ -65,11 +65,12 @@ const defaultGrpcTSDefs = () =>
 declare namespace grpc_ts {
 ${
         i(`
+type Meta = Record<string, string | Buffer>
 type RpcResolverParams<TContext, TRequest> = {
 ${
             i(`ctx: TContext,
 request: TRequest,
-meta: Record<string, string | Buffer>`)
+meta: Meta`)
         }
 }
 
@@ -98,13 +99,13 @@ type ServerStreamResolver<TContext, TRequest, TResponse> = (arg: ServerStreamRpc
 
 type BidiStreamResolver<TContext, TRequest, TResponse> = (arg: BidiStreamRpcParams<TContext, TRequest, TResponse>) => void
 
-type UnaryCall<TRequest, TResponse> = any
+type UnaryCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => Promise<TResponse>
 
-type ClientStreamCall<TRequest, TResponse> = any
+type ClientStreamCall<TRequest, TResponse> = (meta?: Meta) => any
 
-type ServerStreamCall<TRequest, TResponse> = any
+type ServerStreamCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => any
 
-type BidiStreamCall<TRequest, TResponse> = any
+type BidiStreamCall<TRequest, TResponse> = (meta?: Meta) => any
 `)
     }
 }`
@@ -176,12 +177,5 @@ const applyServices = (services: Services): string => {
 ${i(applyServices(service))}
 }`
         }
-    }).join('\n')
-}
-
-const generateServiceRpcs = (service: GrpcService) => {
-    return Object.entries(service.service.methods).map(([, method]) => {
-        console.log(method)
-        return `${method.name}: () => `
     }).join('\n')
 }

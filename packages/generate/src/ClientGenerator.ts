@@ -1,6 +1,5 @@
-import _ from 'lodash'
 import { ProtoParser } from './parseProtoObj'
-import { ExportCollector, i } from './utils'
+import { ExportCollector } from './utils'
 
 interface GrpcClientGeneratorOptions {
     exportCollector: ExportCollector
@@ -22,7 +21,11 @@ export class GrpcTsClientGenerator {
 export class GrpcClient {
 }
 
-export declare function createGrpcClient(): GrpcClient & grpc_calls.ServicesTree
+interface CreateGrpcClientOptions {
+    url: string
+}
+
+export declare function createGrpcClient(opts: CreateGrpcClientOptions): GrpcClient & grpc_calls.ServicesTree
 `
     }
 
