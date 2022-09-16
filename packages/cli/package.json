@@ -28,6 +28,7 @@
         "@grpc-ts/generate": "workspace:*",
         "@grpc-ts/internals": "workspace:*",
         "@grpc-ts/server": "workspace:*",
+        "@grpc-ts/client": "workspace:*",
         "arg": "^5.0.2"
     },
     "grpc_ts": {

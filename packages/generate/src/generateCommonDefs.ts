@@ -1,4 +1,6 @@
+import _ from 'lodash'
 import { ProtoParser } from './parseProtoObj'
+import { GrpcService } from './Service'
 import { i } from './utils'
 import { ExportCollector } from './utils'
 
@@ -23,30 +25,14 @@ export class CommonDefsGenerator {
     toTS() {
         const { parsed, services } = this.protoParser
 
-        let serviceMapFields = ``
-        if (Object.entries(services).length) {
-            serviceMapFields = `
-${
-                Object.entries(services).map(([servicePath, service]) => {
-                    return i(`'${servicePath}': ${service.fullName}<TContext>`)
-                }).join('\n')
-            }
-`
-        }
-
         return `${defaultGrpcTSDefs()}
 
 // -------------- Messages/Enums --------------
 ${parsed.toTS(this.protoParser)}
 
 // -------------- Services --------------
-${
-            Object.values(services).map((service) => {
-                return service.toTS(this.protoParser)
-            }).join('\n\n')
-        }
-// Services Map
-export type ServicesMap<TContext = {}> = {${serviceMapFields}}
+${generateGrpcResolversNamespace(services, this.protoParser)}
+${generateGrpcCallsNamespace(services, this.protoParser)}
 
 ${this.exportCollector.tsExports.join('\n')}
 `
@@ -65,7 +51,10 @@ ${
             }).join(',\n')
         }
 }
-${this.exportCollector.jsExports.join('\n')}
+
+module.exports = {
+${i(`${this.exportCollector.jsExports.join(',\n')}`)}
+}
 `
     }
 }
@@ -76,38 +65,117 @@ const defaultGrpcTSDefs = () =>
 declare namespace grpc_ts {
 ${
         i(`
+type Meta = Record<string, string | Buffer>
 type RpcResolverParams<TContext, TRequest> = {
 ${
             i(`ctx: TContext,
 request: TRequest,
-meta: Record<string, string | Buffer>`)
+meta: Meta`)
         }
 }
 
-type ClientReadableStream<TRequest> = EventEmitter & {
-${i(`on(event: 'data', listener: (data: TRequest) => void): void`)}
+type ReadableStream<T> = EventEmitter & {
+${i(`on(event: 'data', listener: (data: T) => void): void`)}
 }
 
-type ServerWritableStream<TResponse> = EventEmitter & {
-${i(`write(chunk: TResponse): void`)}
+type WritableStream<T> = EventEmitter & {
+${i(`write(chunk: T): void`)}
 ${i(`end(): void`)}
 }
 
 type ServerStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TContext, TRequest> & {
-${i(`call: ServerWritableStream<TResponse>`)}
+${i(`call: WritableStream<TResponse>`)}
 }
 
-type BidiStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TContext, ClientReadableStream<TRequest>> & {
-${i(`call: ServerWritableStream<TResponse>`)}
+type BidiStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TContext, ReadableStream<TRequest>> & {
+${i(`call: WritableStream<TResponse>`)}
 }
 
 type UnaryResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
 
-type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, ClientReadableStream<TRequest>>) => Promise<TResponse> | TResponse
+type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, ReadableStream<TRequest>>) => Promise<TResponse> | TResponse
 
 type ServerStreamResolver<TContext, TRequest, TResponse> = (arg: ServerStreamRpcParams<TContext, TRequest, TResponse>) => void
 
 type BidiStreamResolver<TContext, TRequest, TResponse> = (arg: BidiStreamRpcParams<TContext, TRequest, TResponse>) => void
+
+type UnaryCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => Promise<TResponse>
+
+type ClientStreamCall<TRequest, TResponse> = (meta?: Meta) => WritableStream<TRequest> & { on(event: "end", cb: (response: TResponse) => void): void }
+
+type ServerStreamCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => ReadableStream<TResponse> 
+
+type BidiStreamCall<TRequest, TResponse> = (meta?: Meta) => WritableStream<TRequest> & ReadableStream<TResponse>
 `)
     }
 }`
+
+type Services = Record<string, GrpcService>
+
+const generateGrpcResolversNamespace = (services: Services, protoParser: ProtoParser) => {
+    let serviceMapFields = ``
+    if (Object.entries(services).length) {
+        serviceMapFields = `
+${
+            Object.entries(services).map(([servicePath, service]) => {
+                return i(`'${servicePath}': ${service.fullName}<TContext>`)
+            }).join('\n')
+        }
+`
+    }
+
+    return `export namespace grpc_resolvers {
+${
+        i(`${generateServiceFields(services, protoParser, 'resolver')}
+
+// Services Map
+export type ServicesMap<TContext = {}> = {${serviceMapFields}}`)
+    }
+}
+`
+}
+
+const generateGrpcCallsNamespace = (services: Services, protoParser: ProtoParser) => {
+    let serviceTreeFields = ``
+    if (Object.entries(services).length) {
+        serviceTreeFields = `\n${i(generateProxysForServices(services))}\n`
+    }
+
+    return `export namespace grpc_calls {
+${
+        i(`${generateServiceFields(services, protoParser, 'call')}
+
+// Services Tree
+export type ServicesTree = {${serviceTreeFields}}`)
+    }
+}
+`
+}
+
+const generateServiceFields = (services: Services, protoParser: ProtoParser, type: 'resolver' | 'call') => {
+    return Object.values(services).map((service) => {
+        return service.toTS(protoParser, type)
+    }).join('\n\n')
+}
+
+const generateProxysForServices = (services: Services) => {
+    const serviceRecord: Services = {}
+
+    Object.values(services).forEach((service) => {
+        _.set(serviceRecord, service.name.slice(1), service)
+    })
+
+    return applyServices(serviceRecord)
+}
+
+const applyServices = (services: Services): string => {
+    return Object.entries(services).map(([name, service]) => {
+        if (service instanceof GrpcService) {
+            return `${name}: ${service.fullName}`
+        } else {
+            return `${name}: {
+${i(applyServices(service))}
+}`
+        }
+    }).join('\n')
+}

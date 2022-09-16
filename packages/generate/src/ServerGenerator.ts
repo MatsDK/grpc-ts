@@ -16,14 +16,14 @@ export class GrpcTsServerGenerator {
     toTS() {
         this.opts.exportCollector.addExport('TS', `export * from "./server"`)
 
-        return `import { ServicesMap } from '.'
+        return `import { grpc_resolvers } from '.'
 
 export class GrpcServer<TContext> {
 
 ${i(`listen(url: string, cb?: (error: Error | null, port: number) => void): void`)}
 
 ${
-            i(`addServiceResolvers<TName extends keyof ServicesMap<TContext>, TResolvers extends ServicesMap<TContext>[TName]>(
+            i(`addServiceResolvers<TName extends keyof grpc_resolvers.ServicesMap<TContext>, TResolvers extends grpc_resolvers.ServicesMap<TContext>[TName]>(
 ${
                 i(`serviceName: TName, 
 resolvers: TResolvers`)
@@ -43,9 +43,7 @@ export declare function createGrpcServer<TContext = {}>(options: CreateGrpcServe
     toJS() {
         this.opts.exportCollector.addExport(
             'JS',
-            `module.exports = {
-  ...require("./server")
-}`,
+            `...require("./server")`,
         )
 
         return `const { GrpcServer } = require("@grpc-ts/server/src/runtime")

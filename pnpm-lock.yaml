@@ -30,6 +30,7 @@ importers:
 
   packages/cli:
     specifiers:
+      '@grpc-ts/client': workspace:*
       '@grpc-ts/generate': workspace:*
       '@grpc-ts/internals': workspace:*
       '@grpc-ts/server': workspace:*
@@ -40,6 +41,7 @@ importers:
       tsx: ^3.9.0
       typescript: ^4.7.4
     dependencies:
+      '@grpc-ts/client': link:../client
       '@grpc-ts/generate': link:../generate
       '@grpc-ts/internals': link:../internals
       '@grpc-ts/server': link:../server
@@ -51,19 +53,40 @@ importers:
       tsx: 3.9.0
       typescript: 4.7.4
 
-  packages/generate:
+  packages/client:
     specifiers:
       '@grpc/grpc-js': ^1.6.7
       '@grpc/proto-loader': ^0.7.0
       '@types/node': ^18.0.0
+      lodash: ^4.17.21
+      ts-node-dev: ^2.0.0
+      typescript: ^4.7.4
+    dependencies:
+      '@grpc/grpc-js': 1.6.7
+      '@grpc/proto-loader': 0.7.0
+      lodash: 4.17.21
+    devDependencies:
+      '@types/node': 18.7.13
+      ts-node-dev: 2.0.0_57uwcby55h6tzvkj3v5sfcgxoe
+      typescript: 4.7.4
+
+  packages/generate:
+    specifiers:
+      '@grpc/grpc-js': ^1.6.7
+      '@grpc/proto-loader': ^0.7.0
+      '@types/lodash': ^4.14.184
+      '@types/node': ^18.0.0
+      lodash: ^4.17.21
       protobufjs: ^7.0.0
       ts-node-dev: ^2.0.0
       typescript: ^4.7.4
     dependencies:
       '@grpc/grpc-js': 1.6.7
       '@grpc/proto-loader': 0.7.0
+      lodash: 4.17.21
       protobufjs: 7.0.0
     devDependencies:
+      '@types/lodash': 4.14.184
       '@types/node': 18.0.0
       ts-node-dev: 2.0.0_qiyc72axg2v44xl4yovan2v55u
       typescript: 4.7.4
@@ -85,7 +108,6 @@ importers:
       '@types/node': ^18.0.0
       glob: ^8.0.3
       lodash: ^4.17.21
-      reflect-metadata: ^0.1.13
       ts-node-dev: ^2.0.0
       typescript: ^4.7.4
     dependencies:
@@ -93,7 +115,6 @@ importers:
       '@grpc/proto-loader': 0.7.0
       glob: 8.0.3
       lodash: 4.17.21
-      reflect-metadata: 0.1.13
     devDependencies:
       '@types/glob': 7.2.0
       '@types/lodash': 4.14.184
@@ -183,7 +204,7 @@ packages:
     engines: {node: ^8.13.0 || >=10.10.0}
     dependencies:
       '@grpc/proto-loader': 0.6.13
-      '@types/node': 18.0.0
+      '@types/node': 18.7.13
     dev: false
 
   /@grpc/proto-loader/0.6.13:
@@ -350,10 +371,10 @@ packages:
 
   /@types/node/18.0.0:
     resolution: {integrity: sha512-cHlGmko4gWLVI27cGJntjs/Sj8th9aYwplmZFwmmgYQQvL5NUsgVJG7OddLvNfLqYS31KFN0s3qlaD9qCaxACA==}
+    dev: true
 
   /@types/node/18.7.13:
     resolution: {integrity: sha512-46yIhxSe5xEaJZXWdIBP7GU4HDTG8/eo0qd9atdiL+lFpA03y8KS+lkTN834TWJj5767GbWv4n/P6efyTFt1Dw==}
-    dev: true
 
   /@types/normalize-package-data/2.4.1:
     resolution: {integrity: sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==}
@@ -1901,7 +1922,7 @@ packages:
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
       '@types/long': 4.0.2
-      '@types/node': 18.0.0
+      '@types/node': 18.7.13
       long: 4.0.0
     dev: false
 
@@ -1921,7 +1942,7 @@ packages:
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
       '@types/long': 4.0.2
-      '@types/node': 18.0.0
+      '@types/node': 18.7.13
       long: 5.2.0
     dev: false
 
@@ -1968,10 +1989,6 @@ packages:
     dependencies:
       picomatch: 2.3.1
     dev: true
-
-  /reflect-metadata/0.1.13:
-    resolution: {integrity: sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==}
-    dev: false
 
   /regexp.prototype.flags/1.4.3:
     resolution: {integrity: sha512-fjggEOO3slI6Wvgjwflkc4NFRCTZAu5CnNfBd5qOMYhWdn67nJBBu34/TkD++eeFmd8C9r9jfXJ27+nSiRkSUA==}
@@ -2201,6 +2218,34 @@ packages:
     hasBin: true
     dev: true
 
+  /ts-node-dev/2.0.0_57uwcby55h6tzvkj3v5sfcgxoe:
+    resolution: {integrity: sha512-ywMrhCfH6M75yftYvrvNarLEY+SUXtUvU8/0Z6llrHQVBx12GiFk5sStF8UdfE/yfzk9IAq7O5EEbTQsxlBI8w==}
+    engines: {node: '>=0.8.0'}
+    hasBin: true
+    peerDependencies:
+      node-notifier: '*'
+      typescript: '*'
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      chokidar: 3.5.3
+      dynamic-dedupe: 0.3.0
+      minimist: 1.2.6
+      mkdirp: 1.0.4
+      resolve: 1.22.1
+      rimraf: 2.7.1
+      source-map-support: 0.5.21
+      tree-kill: 1.2.2
+      ts-node: 10.8.1_57uwcby55h6tzvkj3v5sfcgxoe
+      tsconfig: 7.0.0
+      typescript: 4.7.4
+    transitivePeerDependencies:
+      - '@swc/core'
+      - '@swc/wasm'
+      - '@types/node'
+    dev: true
+
   /ts-node-dev/2.0.0_qiyc72axg2v44xl4yovan2v55u:
     resolution: {integrity: sha512-ywMrhCfH6M75yftYvrvNarLEY+SUXtUvU8/0Z6llrHQVBx12GiFk5sStF8UdfE/yfzk9IAq7O5EEbTQsxlBI8w==}
     engines: {node: '>=0.8.0'}
@@ -2227,6 +2272,37 @@ packages:
       - '@swc/core'
       - '@swc/wasm'
       - '@types/node'
+    dev: true
+
+  /ts-node/10.8.1_57uwcby55h6tzvkj3v5sfcgxoe:
+    resolution: {integrity: sha512-Wwsnao4DQoJsN034wePSg5nZiw4YKXf56mPIAeD6wVmiv+RytNSWqc2f3fKvcUoV+Yn2+yocD71VOfQHbmVX4g==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.3
+      '@types/node': 18.7.13
+      acorn: 8.8.0
+      acorn-walk: 8.2.0
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 4.7.4
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
     dev: true
 
   /ts-node/10.8.1_qiyc72axg2v44xl4yovan2v55u:

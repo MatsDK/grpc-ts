@@ -11,7 +11,7 @@ export class GrpcService extends GrpcType {
         this.service = service
     }
 
-    toTS(protoParser: ProtoParser) {
+    toTS(protoParser: ProtoParser, type: 'resolver' | 'call') {
         const methods = Object.entries(this.service.methods)
 
         let methodsOutput = ``
@@ -19,13 +19,15 @@ export class GrpcService extends GrpcType {
             methodsOutput = `
 ${
                 methods
-                    .map(([, method]) => (new Rpc(method)).toTS(protoParser))
+                    .map(([, method]) => (new Rpc(method)).toTS(protoParser, type))
                     .join('\n')
             }
 `
         }
 
-        return `export type ${this.fullName}<TContext = {}> = {${methodsOutput}}`
+        return type === 'resolver'
+            ? `export type ${this.fullName}<TContext = {}> = {${methodsOutput}}`
+            : `export type ${this.fullName} = {${methodsOutput}}`
     }
 }
 
@@ -36,7 +38,7 @@ class Rpc {
         this.method = method
     }
 
-    toTS(protoParser: ProtoParser) {
+    toTS(protoParser: ProtoParser, type: 'resolver' | 'call') {
         let requestType = grpcScalarTypeToTSType(this.method.requestType),
             responseType = grpcScalarTypeToTSType(this.method.responseType)
 
@@ -69,16 +71,30 @@ class Rpc {
             }
         }
 
-        let resolverType = 'UnaryResolver'
+        if (type === 'resolver') {
+            let resolverType = 'UnaryResolver'
 
-        if (this.method.requestStream) {
-            if (this.method.responseStream) resolverType = 'BidiStreamResolver'
-            else resolverType = 'ClientStreamResolver'
-        } else if (this.method.responseStream) {
-            if (this.method.requestStream) resolverType = 'BidiStreamResolver'
-            else resolverType = 'ServerStreamResolver'
+            if (this.method.requestStream) {
+                if (this.method.responseStream) resolverType = 'BidiStreamResolver'
+                else resolverType = 'ClientStreamResolver'
+            } else if (this.method.responseStream) {
+                if (this.method.requestStream) resolverType = 'BidiStreamResolver'
+                else resolverType = 'ServerStreamResolver'
+            }
+
+            return i(`'${this.method.name}': grpc_ts.${resolverType}<TContext, ${requestType}, ${responseType}>`)
+        } else {
+            let callType = 'UnaryCall'
+
+            if (this.method.requestStream) {
+                if (this.method.responseStream) callType = 'BidiStreamCall'
+                else callType = 'ClientStreamCall'
+            } else if (this.method.responseStream) {
+                if (this.method.requestStream) callType = 'BidiStreamCall'
+                else callType = 'ServerStreamCall'
+            }
+
+            return i(`'${this.method.name}': grpc_ts.${callType}<${requestType}, ${responseType}>`)
         }
-
-        return i(`'${this.method.name}': grpc_ts.${resolverType}<TContext, ${requestType}, ${responseType}>`)
     }
 }
