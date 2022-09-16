@@ -74,26 +74,26 @@ meta: Meta`)
         }
 }
 
-type ClientReadableStream<TRequest> = EventEmitter & {
-${i(`on(event: 'data', listener: (data: TRequest) => void): void`)}
+type ReadableStream<T> = EventEmitter & {
+${i(`on(event: 'data', listener: (data: T) => void): void`)}
 }
 
-type ServerWritableStream<TResponse> = EventEmitter & {
-${i(`write(chunk: TResponse): void`)}
+type WritableStream<T> = EventEmitter & {
+${i(`write(chunk: T): void`)}
 ${i(`end(): void`)}
 }
 
 type ServerStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TContext, TRequest> & {
-${i(`call: ServerWritableStream<TResponse>`)}
+${i(`call: WritableStream<TResponse>`)}
 }
 
-type BidiStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TContext, ClientReadableStream<TRequest>> & {
-${i(`call: ServerWritableStream<TResponse>`)}
+type BidiStreamRpcParams<TContext, TRequest, TResponse> = RpcResolverParams<TContext, ReadableStream<TRequest>> & {
+${i(`call: WritableStream<TResponse>`)}
 }
 
 type UnaryResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, TRequest>) => Promise<TResponse> | TResponse
 
-type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, ClientReadableStream<TRequest>>) => Promise<TResponse> | TResponse
+type ClientStreamResolver<TContext, TRequest, TResponse> = (arg: RpcResolverParams<TContext, ReadableStream<TRequest>>) => Promise<TResponse> | TResponse
 
 type ServerStreamResolver<TContext, TRequest, TResponse> = (arg: ServerStreamRpcParams<TContext, TRequest, TResponse>) => void
 
@@ -101,11 +101,11 @@ type BidiStreamResolver<TContext, TRequest, TResponse> = (arg: BidiStreamRpcPara
 
 type UnaryCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => Promise<TResponse>
 
-type ClientStreamCall<TRequest, TResponse> = (meta?: Meta) => any
+type ClientStreamCall<TRequest, TResponse> = (meta?: Meta) => WritableStream<TRequest> & { on(event: "end", cb: (response: TResponse) => void): void }
 
-type ServerStreamCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => any
+type ServerStreamCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => ReadableStream<TResponse> 
 
-type BidiStreamCall<TRequest, TResponse> = (meta?: Meta) => any
+type BidiStreamCall<TRequest, TResponse> = (meta?: Meta) => WritableStream<TRequest> & ReadableStream<TResponse>
 `)
     }
 }`

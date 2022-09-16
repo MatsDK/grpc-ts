@@ -93,9 +93,9 @@ const applyRpcs = ({ name, service }: Service, client: GrpcClient) => {
         const serviceClientImpl = new Service(client.opts.url, credentials.createInsecure())
 
         let handlerFn: ResolverFn = null!
-        // if (rpc.requestStream && rpc.responseStream) handlerFn = this.bidiStreamingRpcHandler(resolver)
-        // else if (rpc.requestStream) handlerFn = this.clientStreamingRpcHandler(resolver)
-        // else if (rpc.responseStream) handlerFn = this.serverStreamingRpcHandler(resolver)
+        if (rpc.requestStream && rpc.responseStream) handlerFn = bidiStreamingCallHandler(rpcName, serviceClientImpl)
+        else if (rpc.requestStream) handlerFn = clientStreamingCallHandler(rpcName, serviceClientImpl)
+        else if (rpc.responseStream) handlerFn = serverStreamingCallHandler(rpcName, serviceClientImpl)
         if (!handlerFn) handlerFn = unaryCallHandler(rpcName, serviceClientImpl)
 
         return [rpcName, handlerFn] as const
@@ -119,5 +119,35 @@ const unaryCallHandler = (rpcName: string, serviceImpl: Record<string, ResolverF
         })
 
         return res
+    }
+}
+
+const clientStreamingCallHandler = (rpcName: string, serviceImpl: Record<string, ResolverFn>) => {
+    return async () => {
+        if (!serviceImpl[rpcName]) throw new Error(`${rpcName} does not exist`)
+
+        const call = serviceImpl[rpcName]()
+
+        return call
+    }
+}
+
+const serverStreamingCallHandler = (rpcName: string, serviceImpl: Record<string, ResolverFn>) => {
+    return async () => {
+        if (!serviceImpl[rpcName]) throw new Error(`${rpcName} does not exist`)
+
+        const call = serviceImpl[rpcName]()
+
+        return call
+    }
+}
+
+const bidiStreamingCallHandler = (rpcName: string, serviceImpl: Record<string, ResolverFn>) => {
+    return async () => {
+        if (!serviceImpl[rpcName]) throw new Error(`${rpcName} does not exist`)
+
+        const call = serviceImpl[rpcName]()
+
+        return call
     }
 }
