@@ -48,8 +48,6 @@ Providing location of proto files:
 
 ```json
 {
-	..
-
     "grpc_ts": {
         "protoPaths": "proto/*.proto"
     }
