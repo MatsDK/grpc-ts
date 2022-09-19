@@ -101,11 +101,22 @@ type BidiStreamResolver<TContext, TRequest, TResponse> = (arg: BidiStreamRpcPara
 
 type UnaryCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => Promise<TResponse>
 
-type ClientStreamCall<TRequest, TResponse> = (meta?: Meta) => WritableStream<TRequest> & { on(event: "end", cb: (response: TResponse) => void): void }
+type ClientStreamingCall<TRequest, TResponse> = WritableStream<TRequest> & {
+${i(`on(ev: 'end', cb: (error: string | null, response: TResponse) => void): void`)}
+${i(`end(): void`)}
+}
 
-type ServerStreamCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => ReadableStream<TResponse> 
+type ClientStreamCall<TRequest, TResponse> = (meta?: Meta) => ClientStreamingCall<TRequest, TResponse> 
 
-type BidiStreamCall<TRequest, TResponse> = (meta?: Meta) => WritableStream<TRequest> & ReadableStream<TResponse>
+type ServerStreamingCall<TResponse> = ReadableStream<TResponse> & {
+${i(`on(ev: 'end', cb: () => void): void`)}
+${i(`on(ev: 'error', cb: (error: string) => void): void`)}
+${i(`on(ev: 'status', cb: (status: string) => void): void`)}
+}
+
+type ServerStreamCall<TRequest, TResponse> = (input: TRequest, meta?: Meta) => ServerStreamingCall<TResponse>
+
+type BidiStreamCall<TRequest, TResponse> = (meta?: Meta) => ServerStreamingCall<TResponse> & ClientStreamingCall<TRequest, TResponse>  
 `)
     }
 }`
