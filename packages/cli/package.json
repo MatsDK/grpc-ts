@@ -1,7 +1,7 @@
 {
     "name": "@grpc-ts/cli",
-    "version": "0.0.0",
-    "description": "",
+    "version": "0.0.1",
+    "description": "Grpc-ts cli",
     "main": "build/index.js",
     "scripts": {
         "build": "tsx helpers/build.ts",
@@ -12,7 +12,7 @@
         "build/index.js"
     ],
     "bin": {
-        "ts-grpc": "build/index.js"
+        "grpcts": "build/index.js"
     },
     "keywords": [],
     "author": "",

@@ -57,6 +57,7 @@ importers:
     specifiers:
       '@grpc/grpc-js': ^1.6.7
       '@grpc/proto-loader': ^0.7.0
+      '@types/lodash': ^4.14.184
       '@types/node': ^18.0.0
       lodash: ^4.17.21
       ts-node-dev: ^2.0.0
@@ -66,6 +67,7 @@ importers:
       '@grpc/proto-loader': 0.7.0
       lodash: 4.17.21
     devDependencies:
+      '@types/lodash': 4.14.184
       '@types/node': 18.7.13
       ts-node-dev: 2.0.0_57uwcby55h6tzvkj3v5sfcgxoe
       typescript: 4.7.4

@@ -1,4 +1,4 @@
-#! /usr/bin / env node
+#!/usr/bin/env node
 
 import { generate } from '@grpc-ts/generate'
 import { findProtoPaths, getGenerators } from '@grpc-ts/internals'
