@@ -1,5 +1,5 @@
 {
-    "name": "@grpc-ts/cli",
+    "name": "grpcts",
     "version": "0.0.1",
     "description": "Grpc-ts cli",
     "main": "build/index.js",
