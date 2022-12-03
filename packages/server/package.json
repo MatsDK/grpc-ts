@@ -1,12 +1,15 @@
 {
-    "name": "@grpc-ts/server",
+    "name": "grpc-ts-server",
     "version": "0.0.0",
     "description": "",
     "main": "index.js",
     "types": "index.d.ts",
     "scripts": {
-        "build": "tsc --build"
+        "build": "tsup src/runtime/index.ts --dts"
     },
+    "files": [
+        "runtime"
+    ],
     "keywords": [],
     "author": "",
     "license": "ISC",
@@ -21,6 +24,7 @@
         "@types/lodash": "^4.14.184",
         "@types/node": "^18.0.0",
         "ts-node-dev": "^2.0.0",
+        "tsup": "^6.4.0",
         "typescript": "^4.7.4"
     }
 }

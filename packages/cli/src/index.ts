@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { generate } from '@grpc-ts/generate'
-import { findProtoPaths, getGenerators } from '@grpc-ts/internals'
+import { generate } from 'grpc-ts-generate'
+import { findProtoPaths, getGenerators } from 'grpc-ts-internals'
 import { parseArgs } from './utils/args'
 import { getOutputDir } from './utils/utils'
 

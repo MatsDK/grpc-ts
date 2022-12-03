@@ -1,13 +1,14 @@
 {
-    "name": "@grpc-ts/internals",
-    "version": "0.0.1",
+    "name": "grpc-ts-internals",
+    "version": "0.0.0",
     "description": "",
     "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "files": [
         "src"
     ],
     "scripts": {
-        "build": "tsup src/index.ts"
+        "build": "tsup src/index.ts --dts"
     },
     "keywords": [],
     "author": "",
@@ -18,6 +19,7 @@
         "zod": "^3.18.0"
     },
     "devDependencies": {
+        "@types/glob": "^7.2.0",
         "tsup": "^6.4.0"
     }
 }

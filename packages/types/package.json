@@ -1,5 +1,5 @@
 {
-    "name": "@grpc-ts/types",
+    "name": "grpc-ts-types",
     "type": "module",
     "version": "0.0.0",
     "description": "",

@@ -46,7 +46,7 @@ export declare function createGrpcServer<TContext = {}>(options: CreateGrpcServe
             `...require("./server")`,
         )
 
-        return `const { GrpcServer } = require("@grpc-ts/server/src/runtime")
+        return `const { GrpcServer } = require("grpc-ts-server/src/runtime")
 const { config } = require(".")
 
 // exports.GrpcServer = getGrpcServer(config)

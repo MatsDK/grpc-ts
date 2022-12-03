@@ -61,7 +61,7 @@ Providing location of proto files:
 **Running a server**
 
 ```typescript
-import { createGrpcServer, User } from '@grpc-ts/server'
+import { createGrpcServer, User } from 'grpc-ts-server'
 
 type Context = {}
 

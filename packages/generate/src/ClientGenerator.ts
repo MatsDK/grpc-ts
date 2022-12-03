@@ -35,7 +35,7 @@ export declare function createGrpcClient(opts: CreateGrpcClientOptions): GrpcCli
             `...require("./client")`,
         )
 
-        return `const { GrpcClient } = require("@grpc-ts/client/src/runtime")
+        return `const { GrpcClient } = require("grpc-ts-client/src/runtime")
 const { config } = require(".")
 
 exports.createGrpcClient = (options) => {

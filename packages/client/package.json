@@ -1,5 +1,5 @@
 {
-    "name": "@grpc-ts/client",
+    "name": "grpc-ts-client",
     "version": "0.0.0",
     "description": "",
     "main": "index.js",
